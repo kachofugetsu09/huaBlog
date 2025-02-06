@@ -8,6 +8,7 @@ import site.hnfy258.domain.VO.HotArticleVo;
 import site.hnfy258.domain.entity.Article;
 import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.service.ArticleService;
+import site.hnfy258.utils.BeanCopyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +23,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ArticleMapper articleMapper;
     @Override
     public List<HotArticleVo> hotArticleList() {
-        List<HotArticleVo> hotArticleVoList = new ArrayList<>();
         List<Article> articleList = articleMapper.selectHotArticleList();
-        for(Article a:articleList){
-            HotArticleVo hotArticleVo = new HotArticleVo();
-            BeanUtils.copyProperties(a,hotArticleVo);
-            hotArticleVoList.add(hotArticleVo);
-        }
+//        for(Article a:articleList){
+//            HotArticleVo hotArticleVo = new HotArticleVo();
+//            BeanUtils.copyProperties(a,hotArticleVo);
+//            hotArticleVoList.add(hotArticleVo);
+//        }
+        List<HotArticleVo> hotArticleVoList = BeanCopyUtils.copyBeanList(articleList, HotArticleVo.class);
         return hotArticleVoList;
     }
 }
