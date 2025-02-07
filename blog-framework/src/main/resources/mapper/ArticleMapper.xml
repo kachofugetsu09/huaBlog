@@ -9,4 +9,5 @@
         SELECT DISTINCT category_id
         from    sg_blog.sg_article   WHERE status = #{status}
     </select>
+
 </mapper>
