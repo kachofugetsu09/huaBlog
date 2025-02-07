@@ -1,12 +1,11 @@
 package site.hnfy258.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.hnfy258.constants.SystemConstants;
-import site.hnfy258.domain.VO.CategoryVo;
-import site.hnfy258.domain.entity.Category;
+import site.hnfy258.VO.CategoryVo;
+import site.hnfy258.entity.Category;
 import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.mapper.CategoryMapper;
 import site.hnfy258.service.CategoryService;

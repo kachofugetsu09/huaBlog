@@ -2,7 +2,7 @@ package site.hnfy258.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
-import site.hnfy258.domain.entity.Category;
+import site.hnfy258.entity.Category;
 
 
 /**

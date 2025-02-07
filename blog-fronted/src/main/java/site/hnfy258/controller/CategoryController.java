@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import site.hnfy258.domain.ResponseResult;
-import site.hnfy258.domain.VO.CategoryVo;
+import site.hnfy258.VO.CategoryVo;
 import site.hnfy258.service.CategoryService;
 
 import java.util.List;

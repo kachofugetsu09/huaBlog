@@ -1,7 +1,6 @@
-package site.hnfy258.domain.entity;
+package site.hnfy258.entity;
 
 import java.util.Date;
-import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;

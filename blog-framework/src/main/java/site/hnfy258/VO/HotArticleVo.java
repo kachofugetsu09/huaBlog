@@ -1,4 +1,4 @@
-package site.hnfy258.domain.VO;
+package site.hnfy258.VO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

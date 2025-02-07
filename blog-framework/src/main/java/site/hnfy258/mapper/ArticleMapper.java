@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.mybatis.spring.annotation.MapperScan;
-import site.hnfy258.domain.entity.Article;
+import site.hnfy258.entity.Article;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper
 

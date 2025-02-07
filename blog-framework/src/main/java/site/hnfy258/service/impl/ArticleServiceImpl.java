@@ -2,24 +2,19 @@ package site.hnfy258.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
-import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.hnfy258.constants.SystemConstants;
-import site.hnfy258.domain.ResponseResult;
-import site.hnfy258.domain.VO.ArticleDetailVo;
-import site.hnfy258.domain.VO.ArticleListVo;
-import site.hnfy258.domain.VO.HotArticleVo;
-import site.hnfy258.domain.VO.PageVo;
-import site.hnfy258.domain.entity.Article;
+import site.hnfy258.VO.ArticleDetailVo;
+import site.hnfy258.VO.ArticleListVo;
+import site.hnfy258.VO.HotArticleVo;
+import site.hnfy258.VO.PageVo;
+import site.hnfy258.entity.Article;
 import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.service.ArticleService;
 import site.hnfy258.utils.BeanCopyUtils;
 import com.github.pagehelper.PageHelper;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service

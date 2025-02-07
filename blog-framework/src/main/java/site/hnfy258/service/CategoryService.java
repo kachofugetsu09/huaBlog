@@ -1,8 +1,8 @@
 package site.hnfy258.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import site.hnfy258.domain.VO.CategoryVo;
-import site.hnfy258.domain.entity.Category;
+import site.hnfy258.VO.CategoryVo;
+import site.hnfy258.entity.Category;
 
 import java.util.List;
 

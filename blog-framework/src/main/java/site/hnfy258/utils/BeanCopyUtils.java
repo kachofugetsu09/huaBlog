@@ -1,7 +1,5 @@
 package site.hnfy258.utils;
 
-import site.hnfy258.domain.entity.Article;
-import site.hnfy258.domain.VO.HotArticleVo;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
