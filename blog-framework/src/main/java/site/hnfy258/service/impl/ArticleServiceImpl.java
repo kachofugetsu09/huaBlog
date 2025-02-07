@@ -7,6 +7,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.hnfy258.constants.SystemConstants;
+import site.hnfy258.domain.ResponseResult;
+import site.hnfy258.domain.VO.ArticleDetailVo;
 import site.hnfy258.domain.VO.ArticleListVo;
 import site.hnfy258.domain.VO.HotArticleVo;
 import site.hnfy258.domain.VO.PageVo;
@@ -60,5 +62,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
 
         return pagevo;
+    }
+
+    /**
+     * @param id
+     * @return
+     */
+    @Override
+    public ArticleDetailVo getArticleDetail(Long id) {
+        Article article = articleMapper.getById(id);
+        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+        return articleDetailVo;
     }
 }

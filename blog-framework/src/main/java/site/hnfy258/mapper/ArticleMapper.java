@@ -19,4 +19,6 @@ public interface ArticleMapper extends BaseMapper<Article> {
     List<Long> getAllCategoryIds(@Param("status") int status);
     @Select("SELECT * FROM sg_article WHERE category_id = #{categoryId} AND status = #{status}")
     List<Article> getAllArticleByCategoryId(@Param("categoryId") Long categoryId, @Param("status") int status);;
+    @Select("SELECT * FROM sg_article WHERE id = #{id}")
+    Article getById(Long id);
 }
