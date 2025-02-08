@@ -2,12 +2,11 @@ package site.hnfy258.controller;
 
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
 import site.hnfy258.domain.ResponseResult;
+import site.hnfy258.entity.Comment;
 import site.hnfy258.service.CommentService;
 
 @RestController
@@ -24,5 +23,11 @@ public class CommentController {
     ){
         PageVo pageVo = commentService.commentList(articleId,pageNum,pageSize);
         return ResponseResult.okResult(pageVo);
+    }
+
+    @PostMapping
+    public ResponseResult addComment(@RequestBody Comment comment){
+        commentService.addComment(comment);
+        return ResponseResult.okResult();
     }
 }

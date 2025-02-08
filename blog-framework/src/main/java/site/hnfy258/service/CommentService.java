@@ -3,6 +3,7 @@ package site.hnfy258.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
 
 
@@ -15,5 +16,7 @@ import site.hnfy258.entity.Comment;
 public interface CommentService extends IService<Comment> {
 
     PageVo commentList(Long articleId, Integer pageNum, Integer pageSize);
+
+    void addComment(Comment comment);
 }
 

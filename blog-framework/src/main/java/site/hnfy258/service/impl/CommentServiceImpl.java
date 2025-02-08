@@ -6,15 +6,23 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.hnfy258.Exception.SystemException;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
+import site.hnfy258.entity.User;
+import site.hnfy258.enums.AppHttpCodeEnum;
 import site.hnfy258.mapper.CommentMapper;
 import site.hnfy258.service.CommentService;
 import site.hnfy258.service.UserService;
 import site.hnfy258.utils.BeanCopyUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 评论表(Comment)表服务实现类
@@ -34,10 +42,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @param entity
      * @return
      */
-    @Override
-    public boolean save(Comment entity) {
-        return super.save(entity);
-    }
+
 
     /**
      * @param articleId
@@ -52,33 +57,39 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         List<Comment> rootCommentList = commentMapper.getRootComment(articleId);
         Page<Comment> page = (Page<Comment>) rootCommentList;
 
-        // 转换为 CommentVo
-        List<CommentVo> commentVoList = BeanCopyUtils.copyBeanList(page.getResult(), CommentVo.class);
+        // 收集所有用户ID
+        Set<Long> userIds = page.getResult().stream()
+                .map(Comment::getCreateBy)
+                .collect(Collectors.toSet());
 
-        // 设置用户名和子评论
-        for (CommentVo commentVo : commentVoList) {
-            // 设置用户名
-            commentVo.setUsername(userService.getNickName(userService.getById(commentVo.getCreateBy())));
+        // 批量查询用户信息
+        Map<Long, User> userMap = userService.listByIds(userIds).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
 
-            // 查询子评论
-            List<Comment> childrenCommentList = commentMapper.getChildren(commentVo.getId());
-            List<CommentVo> childrenCommentVoList = BeanCopyUtils.copyBeanList(childrenCommentList, CommentVo.class);
-
-            // 设置子评论的用户名
-            for (CommentVo childCommentVo : childrenCommentVoList) {
-                childCommentVo.setUsername(userService.getNickName(userService.getById(childCommentVo.getCreateBy())));
-                if (childCommentVo.getToCommentUserId() != null) {
-                    String toCommentUserName = userService.getNickName(userService.getById(childCommentVo.getToCommentUserId()));
-                    childCommentVo.setToCommentUserName(toCommentUserName);
-                }
-            }
-
-            // 设置子评论
-            commentVo.setChildren(childrenCommentVoList);
-        }
+        // 转换为 CommentVo 并设置用户名
+        List<CommentVo> commentVoList = page.getResult().stream()
+                .map(comment -> {
+                    CommentVo vo = BeanCopyUtils.copyBean(comment, CommentVo.class);
+                    User user = userMap.get(comment.getCreateBy());
+                    vo.setUsername(user != null ? user.getNickName() : "未知用户");
+                    return vo;
+                })
+                .collect(Collectors.toList());
 
         // 返回分页结果
         return new PageVo(commentVoList, page.getTotal());
+    }
+
+    /**
+     * @param comment
+     * @return
+     */
+    @Override
+    public void addComment(Comment comment) {
+        if(comment.getContent() == null){
+            throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
+        }
+        save(comment);
     }
 }
 
