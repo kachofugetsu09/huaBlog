@@ -15,8 +15,11 @@ public interface ArticleMapper extends BaseMapper<Article> {
     List<Article> selectHotArticleList();
 
     List<Long> getAllCategoryIds(@Param("status") int status);
-    @Select("SELECT * FROM sg_article WHERE category_id = #{categoryId} AND status = #{status}")
-    List<Article> getAllArticleByCategoryId(@Param("categoryId") Long categoryId, @Param("status") int status);;
     @Select("SELECT * FROM sg_article WHERE id = #{id}")
     Article getById(Long id);
+    List<Article> getArticleList(@Param("categoryId") Long categoryId, @Param("status") Integer status);
+    List<Article> getArticlesWithCategoryName(@Param("categoryId") Long categoryId,
+                                              @Param("status") int status);
+
+
 }

@@ -2,6 +2,7 @@ package site.hnfy258.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.hnfy258.constants.SystemConstants;
@@ -16,6 +17,7 @@ import site.hnfy258.utils.BeanCopyUtils;
 import com.github.pagehelper.PageHelper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -45,18 +47,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public PageVo articleList(Integer pageNum, Integer pageSize, Long categoryId) {
-        // 开始分页
-        Page<Article> page = PageHelper.startPage(pageNum, pageSize);
+        // 开启分页
+        PageHelper.startPage(pageNum, pageSize);
 
-        // 查询文章列表
-        List<Article> articles = articleMapper.getAllArticleByCategoryId(categoryId, SystemConstants.ARTICLE_STATUS_NORMAL);
+        // 调用 Mapper 方法查询文章列表
+        List<Article> articles = articleMapper.getArticleList(categoryId, SystemConstants.ARTICLE_STATUS_NORMAL);
 
-        // 将文章列表转换为目标 VO 列表
+        // 将查询结果转换为 VO 对象
         List<ArticleListVo> articleListVos = BeanCopyUtils.copyBeanList(articles, ArticleListVo.class);
-        PageVo pagevo = new PageVo(articleListVos, page.getTotal());
 
+        // 获取分页信息
+        PageInfo<Article> pageInfo = new PageInfo<>(articles);
 
-        return pagevo;
+        // 封装结果
+        PageVo pageVo = new PageVo(articleListVos, pageInfo.getTotal());
+        return pageVo;
     }
 
     /**

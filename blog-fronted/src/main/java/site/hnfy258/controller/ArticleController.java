@@ -35,5 +35,6 @@ public class ArticleController {
     public ResponseResult getArticleDetail(@PathVariable("id") Long id){
         return ResponseResult.okResult(articleService.getArticleDetail(id));
     }
+
 }
 

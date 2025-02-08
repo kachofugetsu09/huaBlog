@@ -1,0 +1,21 @@
+package site.hnfy258.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import site.hnfy258.entity.User;
+
+
+/**
+ * 用户表(User)表数据库访问层
+ *
+ * @author makejava
+ * @since 2025-02-08 04:34:44
+ */
+@Mapper
+public interface UserMapper extends BaseMapper<User> {
+    @Select("select * from sys_user where user_name = #{userName}")
+    User getUserByName(String userName);
+
+}
+
