@@ -2,6 +2,7 @@ package site.hnfy258.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.entity.Comment;
 
@@ -17,8 +18,7 @@ import java.util.List;
 @Mapper
 public interface CommentMapper extends BaseMapper<Comment> {
 
-    List<Comment> getRootComment(Long articleId);
-
-    List<Comment> getChildren(Long id);
+    List<Comment> getRootComment(@Param("articleId") Long articleId, @Param("commentType") String commentType);
+    List<Comment> getChildren(@Param("articleId") Long articleId, @Param("id") Long rootId, @Param("commentType") String commentType);
 }
 

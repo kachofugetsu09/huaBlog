@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
 import site.hnfy258.service.CommentService;
@@ -14,20 +15,28 @@ import site.hnfy258.service.CommentService;
 @Api(tags = "评论")
 public class CommentController {
     @Autowired
-    private CommentService commentService;;
+    private CommentService commentService;
+    ;
+
     @GetMapping("/commentList")
     public ResponseResult<CommentVo> commentList(
             Long articleId,
             Integer pageNum,
             Integer pageSize
-    ){
-        PageVo pageVo = commentService.commentList(articleId,pageNum,pageSize);
+    ) {
+        PageVo pageVo = commentService.commentList(SystemConstants.ARTICLE_COMMENT, articleId, pageNum, pageSize);
         return ResponseResult.okResult(pageVo);
     }
 
     @PostMapping
-    public ResponseResult addComment(@RequestBody Comment comment){
+    public ResponseResult addComment(@RequestBody Comment comment) {
         commentService.addComment(comment);
         return ResponseResult.okResult();
+    }
+
+    @GetMapping("/linkCommentList")
+    public ResponseResult linkCommentList(Integer pageNum, Integer pageSize) {
+        PageVo pageVo= commentService.commentList(SystemConstants.LINK_COMMENT, null, pageNum, pageSize);
+    return ResponseResult.okResult(pageVo);
     }
 }

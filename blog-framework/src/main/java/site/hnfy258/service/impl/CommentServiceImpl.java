@@ -51,34 +51,41 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @return
      */
     @Override
-    public PageVo commentList(Long articleId, Integer pageNum, Integer pageSize) {
+    public PageVo commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
         // 分页查询根评论
         PageHelper.startPage(pageNum, pageSize);
-        List<Comment> rootCommentList = commentMapper.getRootComment(articleId);
+        List<Comment> rootCommentList = commentMapper.getRootComment(articleId, commentType);
         Page<Comment> page = (Page<Comment>) rootCommentList;
 
-        // 收集所有用户ID
-        Set<Long> userIds = page.getResult().stream()
-                .map(Comment::getCreateBy)
-                .collect(Collectors.toSet());
+        // 转换为 CommentVo
+        List<CommentVo> commentVoList = BeanCopyUtils.copyBeanList(page.getResult(), CommentVo.class);
 
-        // 批量查询用户信息
-        Map<Long, User> userMap = userService.listByIds(userIds).stream()
-                .collect(Collectors.toMap(User::getId, Function.identity()));
+        // 设置用户名和子评论
+        for (CommentVo commentVo : commentVoList) {
+            // 设置用户名
+            commentVo.setUsername(userService.getNickName(userService.getById(commentVo.getCreateBy())));
 
-        // 转换为 CommentVo 并设置用户名
-        List<CommentVo> commentVoList = page.getResult().stream()
-                .map(comment -> {
-                    CommentVo vo = BeanCopyUtils.copyBean(comment, CommentVo.class);
-                    User user = userMap.get(comment.getCreateBy());
-                    vo.setUsername(user != null ? user.getNickName() : "未知用户");
-                    return vo;
-                })
-                .collect(Collectors.toList());
+            // 查询子评论
+            List<Comment> childrenCommentList = commentMapper.getChildren(articleId, commentVo.getId(), commentType);
+            List<CommentVo> childrenCommentVoList = BeanCopyUtils.copyBeanList(childrenCommentList, CommentVo.class);
+
+            // 设置子评论的用户名
+            for (CommentVo childCommentVo : childrenCommentVoList) {
+                childCommentVo.setUsername(userService.getNickName(userService.getById(childCommentVo.getCreateBy())));
+                if (childCommentVo.getToCommentUserId() != null) {
+                    String toCommentUserName = userService.getNickName(userService.getById(childCommentVo.getToCommentUserId()));
+                    childCommentVo.setToCommentUserName(toCommentUserName);
+                }
+            }
+
+            // 设置子评论
+            commentVo.setChildren(childrenCommentVoList);
+        }
 
         // 返回分页结果
         return new PageVo(commentVoList, page.getTotal());
     }
+
 
     /**
      * @param comment
