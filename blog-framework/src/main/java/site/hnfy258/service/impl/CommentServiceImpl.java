@@ -47,19 +47,38 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      */
     @Override
     public PageVo commentList(Long articleId, Integer pageNum, Integer pageSize) {
-        PageHelper.startPage(pageNum,pageSize);
-        List<Comment> commentList =commentMapper.getRootComment(articleId);
-        Page<Comment> page = (Page<Comment>) commentList;
+        // 分页查询根评论
+        PageHelper.startPage(pageNum, pageSize);
+        List<Comment> rootCommentList = commentMapper.getRootComment(articleId);
+        Page<Comment> page = (Page<Comment>) rootCommentList;
+
+        // 转换为 CommentVo
         List<CommentVo> commentVoList = BeanCopyUtils.copyBeanList(page.getResult(), CommentVo.class);
-        for(CommentVo commentVo:commentVoList){
+
+        // 设置用户名和子评论
+        for (CommentVo commentVo : commentVoList) {
+            // 设置用户名
             commentVo.setUsername(userService.getNickName(userService.getById(commentVo.getCreateBy())));
-            if(commentVo.getRootId()!=-1){
-                String toCommentUserName = userService.getNickName(userService.getById(commentVo.getToCommentUserId()));
-                commentVo.setToCommentUserName(toCommentUserName);
+
+            // 查询子评论
+            List<Comment> childrenCommentList = commentMapper.getChildren(commentVo.getId());
+            List<CommentVo> childrenCommentVoList = BeanCopyUtils.copyBeanList(childrenCommentList, CommentVo.class);
+
+            // 设置子评论的用户名
+            for (CommentVo childCommentVo : childrenCommentVoList) {
+                childCommentVo.setUsername(userService.getNickName(userService.getById(childCommentVo.getCreateBy())));
+                if (childCommentVo.getToCommentUserId() != null) {
+                    String toCommentUserName = userService.getNickName(userService.getById(childCommentVo.getToCommentUserId()));
+                    childCommentVo.setToCommentUserName(toCommentUserName);
+                }
             }
+
+            // 设置子评论
+            commentVo.setChildren(childrenCommentVoList);
         }
-        PageVo pageVo = new PageVo(commentVoList, page.getTotal());
-        return pageVo;
+
+        // 返回分页结果
+        return new PageVo(commentVoList, page.getTotal());
     }
 }
 

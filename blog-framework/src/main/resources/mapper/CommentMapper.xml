@@ -4,8 +4,16 @@
 
 <mapper namespace="site.hnfy258.mapper.CommentMapper">
 
+    <!-- 查询根评论 -->
     <select id="getRootComment" resultType="site.hnfy258.entity.Comment">
-        SELECT * from sg_comment
-        WHERE sg_comment.article_id=#{articleId} AND root_id =1
+        SELECT * FROM sg_comment
+        WHERE sg_comment.article_id = #{articleId} AND root_id = -1
     </select>
+
+    <!-- 查询子评论 -->
+    <select id="getChildren" resultType="site.hnfy258.entity.Comment">
+        SELECT * FROM sg_comment
+        WHERE sg_comment.article_id = #{articleId} AND root_id = #{id}
+    </select>
+
 </mapper>
