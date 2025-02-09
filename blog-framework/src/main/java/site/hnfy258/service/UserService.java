@@ -16,5 +16,7 @@ public interface UserService extends IService<User> {
     String getNickName(User user);
 
     UserInfoVo getUserInfo();
+
+    void updateUserInfo(User user);
 }
 
