@@ -36,3 +36,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+#configPrivate
+blog-fronted/src/main/resources/application-dev.yml
