@@ -23,4 +23,10 @@ public class UserController {
         return ResponseResult.okResult();
     }
 
+    @PostMapping("/register")
+    public ResponseResult register(@RequestBody User user){
+        userService.register(user);
+        return ResponseResult.okResult();
+    }
+
 }

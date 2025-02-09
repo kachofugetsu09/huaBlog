@@ -28,7 +28,7 @@ public class UploadServiceImpl implements UploadService {
     public ResponseResult uploadImg(MultipartFile img) {
         // 判断文件类型
         String originalFilename = img.getOriginalFilename();
-        if (originalFilename == null || !originalFilename.endsWith(".png")) {
+        if (originalFilename == null || (!originalFilename.endsWith(".png")&&!originalFilename.endsWith(".jpg"))) {
             throw new SystemException(AppHttpCodeEnum.FILE_TYPE_ERROR);
         }
 
