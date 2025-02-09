@@ -14,9 +14,9 @@ spring:
       max-request-size: 5MB
   mybatis-plus:
     configuration:
-      # 日志
-      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-      map-underscore-to-camel-case: true
+#      # 日志
+#      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#      map-underscore-to-camel-case: true
     global-config:
       db-config:
         logic-delete-field: delFlag
