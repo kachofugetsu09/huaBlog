@@ -1,5 +1,6 @@
 package site.hnfy258.config;
 
+import site.hnfy258.filter.JwtAuthenticationTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import site.hnfy258.filter.JwtAuthenticationTokenFilter;
-import site.hnfy258.handler.security.AccessDeniedHandlerImpl;
-import site.hnfy258.handler.security.AuthenticationEntryPointImpl;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -47,7 +45,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //注销接口需要认证才能访问
                 .antMatchers("/logout").authenticated()
                 .antMatchers("/user/userInfo").authenticated()
-                .antMatchers("/comment").authenticated()
 //                .antMatchers("/upload").authenticated()
                 // 除上面外的所有请求全部不需要认证即可访问
                 .anyRequest().permitAll();

@@ -1,6 +1,7 @@
 package site.hnfy258.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import site.hnfy258.VO.UserInfoVo;
 import site.hnfy258.entity.User;
 
 
@@ -14,5 +15,6 @@ public interface UserService extends IService<User> {
     User getById(Long id);
     String getNickName(User user);
 
+    UserInfoVo getUserInfo();
 }
 
