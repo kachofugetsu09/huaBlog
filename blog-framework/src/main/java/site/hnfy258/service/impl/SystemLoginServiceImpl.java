@@ -11,6 +11,7 @@ import site.hnfy258.entity.User;
 import site.hnfy258.service.LoginService;
 import site.hnfy258.utils.JwtUtil;
 import site.hnfy258.utils.RedisCache;
+import site.hnfy258.utils.SecurityUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,5 +45,14 @@ public class SystemLoginServiceImpl implements LoginService {
 		Map<String,String> map = new HashMap<>();
         map.put("token",jwt);
         return ResponseResult.okResult(map);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void logout() {
+        Long userId = SecurityUtils.getUserId();
+        redisCache.deleteObject("login:"+userId);
     }
 }

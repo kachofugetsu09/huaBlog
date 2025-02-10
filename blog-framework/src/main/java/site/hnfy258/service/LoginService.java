@@ -6,4 +6,5 @@ import site.hnfy258.entity.User;
 public interface LoginService {
     ResponseResult login(User user);
 
+    void logout();
 }

@@ -1,7 +1,10 @@
 package site.hnfy258.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import site.hnfy258.entity.Tag;
+
+import java.util.List;
 
 
 /**
@@ -12,6 +15,9 @@ import site.hnfy258.entity.Tag;
  */
 public interface TagMapper extends BaseMapper<Tag> {
 
+
+    List<Tag> selectTagList(@Param("name") String name,    // 必须添加@Param注解
+                            @Param("remark") String remark);
 }
 
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="site.hnfy258.mapper.TagMapper">
+
+    <select id="selectTagList" resultType="site.hnfy258.entity.Tag">
+        select * from sg_tag
+                 <where>
+                     <if test="name != null and name != ''">
+                         and name = #{name}
+                     </if>
+                     <if test="remark != null and remark != ''">
+                         and  remark = #{remark}
+                     </if>
+                 </where>
+    </select>
+</mapper>

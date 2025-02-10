@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/sg_blog?characterEncoding=utf-8&serverTimezone=UTC
     username: root
-    password: 12345678
+    password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -21,5 +21,10 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
       id-type: auto
-
+  pagehelper:
+    helper-dialect: mysql  # 数据库方言（支持 mysql、oracle、postgresql 等）
+    reasonable: true       # 分页参数合理化，默认 false
+    support-methods-arguments: true  # 支持通过 Mapper 接口参数传递分页参数
+    return-page-info: always  # 总是返回分页信息
+    params: count=countSql    # 配置 count 查询的 SQL
 

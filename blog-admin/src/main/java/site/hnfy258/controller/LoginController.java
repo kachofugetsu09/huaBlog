@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import site.hnfy258.Exception.SystemException;
 import site.hnfy258.VO.AdminUserInfoVo;
+import site.hnfy258.VO.RoutersVo;
 import site.hnfy258.VO.UserInfoVo;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.LoginUser;
+import site.hnfy258.entity.Menu;
 import site.hnfy258.entity.User;
 import site.hnfy258.enums.AppHttpCodeEnum;
 import site.hnfy258.service.LoginService;
@@ -49,6 +51,21 @@ public class LoginController {
         AdminUserInfoVo adminUserInfoVo = new AdminUserInfoVo(perms,roles,userInfoVo);
         return ResponseResult.okResult(adminUserInfoVo);
 
+    }
+
+    @GetMapping("getRouters")
+    public ResponseResult<RoutersVo> getRouters(){
+        Long userId = SecurityUtils.getUserId();
+        //查询menu 结果是tree的形式
+        List<Menu> menus = menuService.selectRouterMenuTreeByUserId(userId);
+        //封装数据返回
+        return ResponseResult.okResult(new RoutersVo(menus));
+    }
+
+    @PostMapping("/user/logout")
+    public ResponseResult logout(){
+        loginService.logout();
+        return ResponseResult.okResult();
     }
 
 }
