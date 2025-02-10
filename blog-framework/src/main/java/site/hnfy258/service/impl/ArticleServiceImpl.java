@@ -10,11 +10,15 @@ import site.hnfy258.VO.ArticleDetailVo;
 import site.hnfy258.VO.ArticleListVo;
 import site.hnfy258.VO.HotArticleVo;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Article;
+import site.hnfy258.entity.Category;
 import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.service.ArticleService;
+import site.hnfy258.service.CategoryService;
 import site.hnfy258.utils.BeanCopyUtils;
 import com.github.pagehelper.PageHelper;
+import site.hnfy258.utils.RedisCache;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +31,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Autowired
     private ArticleMapper articleMapper;
+
+    @Autowired
+    private RedisCache redisCache;
+    @Autowired
+    private CategoryService categoryService;
     @Override
     public List<HotArticleVo> hotArticleList() {
         List<Article> articleList = articleMapper.selectHotArticleList();
@@ -70,8 +79,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public ArticleDetailVo getArticleDetail(Long id) {
-        Article article = articleMapper.getById(id);
+        //根据id查询文章
+        Article article = getById(id);
+        //从redis中获取viewCount
+        Integer viewCount = redisCache.getCacheMapValue("article:viewCount", id.toString());
+        article.setViewCount(viewCount.longValue());
+        //转换成VO
         ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+        //根据分类id查询分类名
+        Long categoryId = articleDetailVo.getCategoryId();
+        Category category = categoryService.getById(categoryId);
+        if(category!=null){
+            articleDetailVo.setCategoryName(category.getName());
+        }
+        //封装响应返回
         return articleDetailVo;
+    }
+
+    @Override
+    public ResponseResult updateViewCount(Long id) {
+        //更新redis中对应 id的浏览量
+        redisCache.incrementCacheMapValue("article:viewCount",id.toString(),1);
+        return ResponseResult.okResult();
     }
 }

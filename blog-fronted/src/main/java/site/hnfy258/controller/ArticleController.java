@@ -2,10 +2,7 @@ package site.hnfy258.controller;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import site.hnfy258.annotation.SystemLog;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.VO.HotArticleVo;
@@ -38,6 +35,11 @@ public class ArticleController {
     @SystemLog(bussinessName = "获取文章详细信息")
     public ResponseResult getArticleDetail(@PathVariable("id") Long id){
         return ResponseResult.okResult(articleService.getArticleDetail(id));
+    }
+
+    @PutMapping("/updateViewCount/{id}")
+    public ResponseResult updateViewCount(@PathVariable("id") Long id){
+        return articleService.updateViewCount(id);
     }
 
 }
