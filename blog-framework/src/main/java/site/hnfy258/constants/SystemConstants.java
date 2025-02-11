@@ -22,6 +22,7 @@ public class SystemConstants
     public static final String MENU = "C";
     public static final String BUTTON = "F";
 
-    public static final Object STATUS_NORMAL =1 ;
-    public static final Object NORMAL =1 ;
+    public static final String STATUS_NORMAL = "1" ;
+    public static final String NORMAL = "1" ;
+    public static final String ADMIN = "1";
 }
