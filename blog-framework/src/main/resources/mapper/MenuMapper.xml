@@ -41,4 +41,15 @@
             m.`status` = 0 AND
             m.`del_flag` = 0
     </select>
+    <select id="selectMenuListByRoleId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT m.id
+        FROM
+            `sys_role_menu` rm
+                LEFT JOIN `sys_menu` m ON rm.`menu_id` = m.`id`
+        WHERE
+            rm.`role_id` = #{roleId}
+        ORDER BY
+            m.parent_id,m.order_num
+    </select>
 </mapper>
