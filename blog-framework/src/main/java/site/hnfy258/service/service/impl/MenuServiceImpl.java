@@ -1,4 +1,4 @@
-package site.hnfy258.service.impl;
+package site.hnfy258.service.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.entity.Menu;
 import site.hnfy258.mapper.MenuMapper;
-import site.hnfy258.service.MenuService;
+import site.hnfy258.service.service.MenuService;
 import site.hnfy258.utils.SecurityUtils;
 
 import java.util.List;

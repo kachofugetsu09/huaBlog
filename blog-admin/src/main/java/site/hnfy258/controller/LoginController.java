@@ -16,8 +16,8 @@ import site.hnfy258.entity.Menu;
 import site.hnfy258.entity.User;
 import site.hnfy258.enums.AppHttpCodeEnum;
 import site.hnfy258.service.LoginService;
-import site.hnfy258.service.MenuService;
-import site.hnfy258.service.RoleService;
+import site.hnfy258.service.service.MenuService;
+import site.hnfy258.service.service.RoleService;
 import site.hnfy258.utils.BeanCopyUtils;
 import site.hnfy258.utils.SecurityUtils;
 

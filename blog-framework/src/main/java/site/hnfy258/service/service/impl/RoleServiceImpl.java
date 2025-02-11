@@ -1,14 +1,13 @@
-package site.hnfy258.service.impl;
+package site.hnfy258.service.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.hnfy258.entity.Role;
 import site.hnfy258.mapper.RoleMapper;
-import site.hnfy258.service.RoleService;
+import site.hnfy258.service.service.RoleService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

@@ -1,4 +1,4 @@
-package site.hnfy258.service;
+package site.hnfy258.service.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import site.hnfy258.entity.Role;
