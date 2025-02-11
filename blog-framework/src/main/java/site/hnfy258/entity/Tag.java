@@ -3,6 +3,8 @@ package site.hnfy258.entity;
 import java.util.Date;
 
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.IdType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +22,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @NoArgsConstructor
 @TableName("sg_tag")
 public class Tag  {
-@TableId
     private Long id;
 
 //标签名

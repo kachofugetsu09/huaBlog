@@ -1,6 +1,7 @@
-package site.hnfy258.service.service;
+package site.hnfy258.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import site.hnfy258.VO.PageVo;
 import site.hnfy258.entity.Role;
 
 import java.util.List;
@@ -15,6 +16,16 @@ import java.util.List;
 public interface RoleService extends IService<Role> {
 
     List<String> selectRoleKeyByUserId(Long id);
+
+    PageVo selectRolePage(Role role, Integer pageNum, Integer pageSize);
+
+    void insertRole(Role role);
+
+    void updateRole(Role role);
+
+    List<Role> selectRoleAll();
+
+    List<Long> selectRoleIdByUserId(Long userId);
 }
 
 

@@ -1,7 +1,6 @@
 package site.hnfy258.controller;
 
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import site.hnfy258.VO.MenuTreeVo;
@@ -9,13 +8,11 @@ import site.hnfy258.VO.MenuVo;
 import site.hnfy258.VO.RoleMenuTreeSelectVo;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Menu;
-import site.hnfy258.service.service.MenuService;
+import site.hnfy258.service.MenuService;
 import site.hnfy258.utils.BeanCopyUtils;
 import site.hnfy258.utils.SystemConverter;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author 三更  B站： https://space.bilibili.com/663528522

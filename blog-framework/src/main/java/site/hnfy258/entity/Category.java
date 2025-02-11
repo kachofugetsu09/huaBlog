@@ -2,6 +2,7 @@ package site.hnfy258.entity;
 
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @NoArgsConstructor
 @TableName("sg_category")
 public class Category  {
-@TableId
+    @TableId
     private Long id;
 
 //分类名

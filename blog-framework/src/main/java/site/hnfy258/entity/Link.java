@@ -3,6 +3,8 @@ package site.hnfy258.entity;
 import java.util.Date;
 
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.IdType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +22,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @NoArgsConstructor
 @TableName("sg_link")
 public class Link  {
-@TableId
+    @TableId
     private Long id;
 
 
