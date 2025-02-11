@@ -2,7 +2,10 @@ package site.hnfy258.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import site.hnfy258.entity.Category;
+
+import java.util.List;
 
 
 /**
@@ -14,6 +17,5 @@ import site.hnfy258.entity.Category;
  */
 @Mapper
 public interface CategoryMapper extends BaseMapper<Category> {
-
 }
 

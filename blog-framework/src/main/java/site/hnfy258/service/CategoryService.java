@@ -2,6 +2,7 @@ package site.hnfy258.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import site.hnfy258.VO.CategoryVo;
+import site.hnfy258.VO.PageVo;
 import site.hnfy258.entity.Category;
 
 import java.util.List;
@@ -16,5 +17,9 @@ import java.util.List;
 public interface CategoryService extends IService<Category> {
 
     List<CategoryVo> getCategoryList();
+
+    PageVo selectCategoryPage(Category category, Integer pageNum, Integer pageSize);
+
+    List<CategoryVo> listAllCategory();
 }
 
