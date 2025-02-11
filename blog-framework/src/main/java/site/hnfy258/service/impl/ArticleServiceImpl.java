@@ -5,6 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import site.hnfy258.DTO.AddArticleDto;
 import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.VO.ArticleDetailVo;
 import site.hnfy258.VO.ArticleListVo;
@@ -12,6 +13,7 @@ import site.hnfy258.VO.HotArticleVo;
 import site.hnfy258.VO.PageVo;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Article;
+import site.hnfy258.entity.ArticleTag;
 import site.hnfy258.entity.Category;
 import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.service.ArticleService;
@@ -36,6 +38,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private RedisCache redisCache;
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private ArticleTagServiceImpl articleTagService;
     @Override
     public List<HotArticleVo> hotArticleList() {
         List<Article> articleList = articleMapper.selectHotArticleList();
@@ -101,5 +105,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         //更新redis中对应 id的浏览量
         redisCache.incrementCacheMapValue("article:viewCount",id.toString(),1);
         return ResponseResult.okResult();
+    }
+
+    /**
+     * @param articleDTO
+     */
+    @Override
+    public void add(AddArticleDto articleDTO) {
+        Article article = BeanCopyUtils.copyBean(articleDTO, Article.class);
+        save(article);
+
+        List<ArticleTag> articleTags = articleDTO.getTags().stream().map(
+                tagId ->new ArticleTag(article.getId(),tagId)
+        ).collect(Collectors.toList());
+        articleTagService.saveBatch(articleTags);
     }
 }

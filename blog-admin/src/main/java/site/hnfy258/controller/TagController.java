@@ -6,10 +6,13 @@ import site.hnfy258.DTO.AddTagDto;
 import site.hnfy258.DTO.EditTagDto;
 import site.hnfy258.DTO.TagListDTO;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.VO.TagVo;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Tag;
 import site.hnfy258.service.TagService;
 import site.hnfy258.utils.BeanCopyUtils;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/content/tag")
@@ -39,5 +42,10 @@ public class TagController {
         Tag tag = BeanCopyUtils.copyBean(tagDto,Tag.class);
         tagService.updateById(tag);
         return ResponseResult.okResult();
+    }
+    @GetMapping("/listAllTag")
+    public ResponseResult listAllTag(){
+        List<TagVo> list = tagService.listAllTag();
+        return ResponseResult.okResult(list);
     }
 }

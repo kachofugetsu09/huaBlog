@@ -3,7 +3,10 @@ package site.hnfy258.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import site.hnfy258.DTO.TagListDTO;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.VO.TagVo;
 import site.hnfy258.entity.Tag;
+
+import java.util.List;
 
 
 /**
@@ -15,6 +18,8 @@ import site.hnfy258.entity.Tag;
 public interface TagService extends IService<Tag> {
 
     PageVo pageTagList(Integer pageNum, Integer pageSize, TagListDTO tagListDTO);
+
+    List<TagVo> listAllTag();
 }
 
 
