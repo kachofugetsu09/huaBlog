@@ -39,3 +39,4 @@ build/
 
 #configPrivate
 blog-fronted/src/main/resources/application-dev.yml
+blog-admin/src/main/resources/application-dev.yml
