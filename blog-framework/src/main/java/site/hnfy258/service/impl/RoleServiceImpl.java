@@ -12,6 +12,7 @@ import site.hnfy258.VO.PageVo;
 import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.entity.Role;
 import site.hnfy258.entity.RoleMenu;
+import site.hnfy258.entity.User;
 import site.hnfy258.mapper.RoleMapper;
 import site.hnfy258.service.RoleService;
 
@@ -112,6 +113,10 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     public List<Long> selectRoleIdByUserId(Long userId) {
         return getBaseMapper().selectRoleIdByUserId(userId);
     }
+
+    /**
+     * @param user
+     */
 }
 
 

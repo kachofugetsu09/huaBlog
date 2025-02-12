@@ -1,6 +1,7 @@
 package site.hnfy258.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import site.hnfy258.VO.PageVo;
 import site.hnfy258.VO.UserInfoVo;
 import site.hnfy258.entity.User;
 
@@ -21,5 +22,17 @@ public interface UserService extends IService<User> {
     void updateUserInfo(User user);
 
     void register(User user);
+
+    PageVo selectUserPage(User user, Integer pageNum, Integer pageSize);
+
+    boolean checkUserNameUnique(String userName);
+
+    boolean checkPhoneUnique(User user);
+
+    boolean checkEmailUnique(User user);
+
+    void addUser(User user);
+
+    void updateUser(User user);
 }
 
