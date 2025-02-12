@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @TableName("sg_article")
 public class Article {
-    @TableId
+    @TableId(value = "id", type = IdType.AUTO)
 
     private Long id;
     //标题

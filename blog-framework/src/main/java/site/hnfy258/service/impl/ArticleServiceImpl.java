@@ -4,10 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import site.hnfy258.DTO.AddArticleDto;
 import site.hnfy258.DTO.ArticleDto;
 import site.hnfy258.VO.*;
 import site.hnfy258.constants.SystemConstants;
@@ -111,9 +111,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param articleDTO
      */
     @Override
-    public void add(AddArticleDto articleDTO) {
-        Article article = BeanCopyUtils.copyBean(articleDTO, Article.class);
+    public void add(ArticleDto articleDTO) {
+        Article article = new Article();
+        BeanUtils.copyProperties(articleDTO,article);
         save(article);
+        System.out.println(article.getId());
 
         List<ArticleTag> articleTags = articleDTO.getTags().stream().map(
                 tagId ->new ArticleTag(article.getId(),tagId)

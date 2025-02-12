@@ -2,7 +2,6 @@ package site.hnfy258.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import site.hnfy258.DTO.AddArticleDto;
 import site.hnfy258.DTO.ArticleDto;
 import site.hnfy258.VO.ArticleVo;
 import site.hnfy258.VO.PageVo;
@@ -17,7 +16,7 @@ public class ArticleController {
     @Autowired
     ArticleService articleService;
     @PostMapping
-    public ResponseResult addArticle(@RequestBody AddArticleDto articleDTO ){
+    public ResponseResult addArticle(@RequestBody ArticleDto articleDTO ){
         articleService.add(articleDTO);
         return ResponseResult.okResult();
     }

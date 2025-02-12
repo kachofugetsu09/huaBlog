@@ -1,7 +1,6 @@
 package site.hnfy258.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import site.hnfy258.DTO.AddArticleDto;
 import site.hnfy258.DTO.ArticleDto;
 import site.hnfy258.VO.ArticleDetailVo;
 import site.hnfy258.VO.ArticleVo;
@@ -21,7 +20,7 @@ public interface ArticleService extends IService<Article> {
 
     ResponseResult updateViewCount(Long id);
 
-    void add(AddArticleDto articleDTO);
+    void add(ArticleDto articleDTO);
 
     PageVo selectArticlePage(Article article, Integer pageNum, Integer pageSize);
 
