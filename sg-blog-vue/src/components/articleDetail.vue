@@ -20,26 +20,6 @@
                 </div>
             </header>
             <div class="article-content markdown-body" v-html="detailObj.content"></div>
-
-            <div class="donate">
-                <div class="donate-word">
-                    <span @click="pdonate=!pdonate">赞赏</span>
-                </div>
-                <el-row :class="pdonate?'donate-body':'donate-body donate-body-show'" :gutter="30">
-                    <el-col  :span="12"   class="donate-item">
-                        <div class="donate-tip">
-                            <img :src="detailObj.wechat_image?detailObj.wechat_image: 'static/img/wx_pay.png'" :onerror="$store.state.errorImg"/>
-                            <span>微信扫一扫，向我赞赏</span>
-                        </div>
-                    </el-col>
-                    <el-col :span="12"  class="donate-item">
-                        <div class="donate-tip">
-                            <img :src="detailObj.alipay_image?detailObj.alipay_image:'static/img/ali_pay.jpg'" :onerror="$store.state.errorImg"/>
-                            <span>支付宝扫一扫，向我赞赏</span>
-                        </div>
-                    </el-col>
-                </el-row>
-            </div>
         </div>
 </template>
 

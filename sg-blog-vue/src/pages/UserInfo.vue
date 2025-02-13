@@ -20,7 +20,7 @@
                               :show-file-list="false"
                               :on-success="handleAvatarSuccess"
                               :before-upload="beforeAvatarUpload">
-                              <img   v-if="userInfoObj.avatar" :src="userInfoObj.avatar?userInfoObj.avatar:'static/img/tou.jpg'"  :onerror="$store.state.errorImg" class="avatar">
+                              <img   v-if="userInfoObj.avatar" :src="userInfoObj.avatar?userInfoObj.avatar:'static/img/touxiang.jpg'"  :onerror="$store.state.errorImg" class="avatar">
                               <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                               <div slot="tip" class="el-upload__tip">点击上传头像，只能上传jpg/png文件，且不超过1mb</div>
                             </el-upload>
@@ -62,7 +62,7 @@
                         <li class="avatarlist">
                             <span class="leftTitle">头像</span>
                             <div class="avatar-uploader">
-                                <img  :src="userInfoObj.avatar?userInfoObj.avatar:'static/img/tou.jpg'"   :onerror="$store.state.errorImg" class="avatar">
+                                <img  :src="userInfoObj.avatar?userInfoObj.avatar:'static/img/touxiang.jpg'"   :onerror="$store.state.errorImg" class="avatar">
                             </div>
                         </li>
                         <li class="username">
@@ -79,7 +79,7 @@
                             <span>{{userInfoObj.sex==0?'男':'女'}}</span>
                         </li>
 
-                     
+
                     </ul>
 
                 </section>
