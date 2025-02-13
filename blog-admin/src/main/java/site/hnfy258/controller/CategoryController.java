@@ -52,7 +52,11 @@ public class CategoryController {
     }
     @PostMapping
     public ResponseResult add(@RequestBody Category category){
+        if (category.getId() != null) {
+            category.setId(null);  // 设置为 null，让数据库自动生成 ID
+        }
         categoryService.save(category);
+        System.out.println("Generated ID: " + category.getId());
         return ResponseResult.okResult();
     }
 

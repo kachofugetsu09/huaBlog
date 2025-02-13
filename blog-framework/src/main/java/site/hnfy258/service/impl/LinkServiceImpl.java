@@ -1,9 +1,12 @@
 package site.hnfy258.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.hnfy258.VO.LinkVo;
+import site.hnfy258.VO.PageVo;
 import site.hnfy258.entity.Link;
 import site.hnfy258.mapper.LinkMapper;
 import site.hnfy258.service.LinkService;
@@ -30,6 +33,31 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link> implements Li
         List<Link> linkList = linkMapper.getAllLink();
         List<LinkVo> linkVos = BeanCopyUtils.copyBeanList(linkList, LinkVo.class);
         return linkVos;
+    }
+
+    /**
+     * @param link
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public PageVo pageLinkList(Link link, Integer pageNum, Integer pageSize) {
+        LambdaQueryWrapper<Link> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(link.getName()!=null,Link::getName,link.getName());
+        queryWrapper.eq(link.getStatus()!=null,Link::getStatus,link.getStatus());
+
+        Page<Link> page = new Page<>();
+        page.setCurrent(pageNum);
+        page.setSize(pageSize);
+        page(page,queryWrapper);
+        long total = page.getTotal();
+        List<Link> records = page.getRecords();
+
+        PageVo pageVo = new PageVo();
+        pageVo.setRows(records);
+        pageVo.setTotal(total);
+        return pageVo;
     }
 }
 
