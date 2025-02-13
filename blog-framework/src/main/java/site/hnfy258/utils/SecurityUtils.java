@@ -33,24 +33,6 @@ public class SecurityUtils
         return null; // Return null or handle as appropriate if the principal is not a LoginUser
     }
 
-    public static LoginUser getLoginUser()
-    {
-        Authentication authentication = getAuthentication();
-
-        if (authentication == null || authentication.getPrincipal() == null) {
-            // Handle the case where the user is not authenticated (e.g., anonymous or not logged in)
-            return null; // Or throw an exception if required
-        }
-
-        Object principal = authentication.getPrincipal();
-
-        // Check if the principal is of the expected type (LoginUser)
-        if (principal instanceof LoginUser) {
-            return (LoginUser) principal;
-        }
-
-        return null; // Return null or handle as appropriate if the principal is not a LoginUser
-    }
 
     public static Boolean isAdmin(){
         Long id = getLoginUser().getUser().getId();

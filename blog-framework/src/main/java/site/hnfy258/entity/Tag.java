@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @NoArgsConstructor
 @TableName("sg_tag")
 public class Tag  {
+    @TableId(type = IdType.AUTO)
     private Long id;
 
 //标签名

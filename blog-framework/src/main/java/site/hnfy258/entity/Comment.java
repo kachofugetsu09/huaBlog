@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @TableName("sg_comment")
 public class Comment  {
-    @TableId
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
 //评论类型（0代表文章评论，1代表友链评论）

@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @TableName("sys_role")
 public class Role  {
     //角色ID@TableId
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     //角色名称

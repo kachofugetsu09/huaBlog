@@ -96,6 +96,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if(comment.getContent() == null){
             throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
         }
+
         save(comment);
     }
 }
