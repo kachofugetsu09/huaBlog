@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="site.hnfy258.mapper.ArticleMapper">
+
+
+    <select id="getAllCategoryIds" resultType="java.lang.Long">
+        SELECT DISTINCT category_id
+        from    sg_blog.sg_article   WHERE status = #{status}
+    </select>
+    <select id="getArticleList" resultType="site.hnfy258.entity.Article">
+        SELECT
+        a.*,
+        c.name AS category_name
+        FROM
+        sg_article a
+        LEFT JOIN
+        sg_category c
+        ON
+        a.category_id = c.id
+        WHERE
+        a.status = #{status}
+        <if test="categoryId != null and categoryId > 0">
+            AND a.category_id = #{categoryId}
+        </if>
+        ORDER BY
+        a.is_top DESC
+    </select>
+    <select id="getArticlesWithCategoryName" resultType="site.hnfy258.entity.Article">
+        SELECT
+        a.*,
+        c.name AS category_name
+        FROM
+        sg_article a
+        LEFT JOIN
+        sg_category c
+        ON
+        a.category_id = c.id
+        WHERE
+        a.status = #{status}
+        <if test="categoryId != null">
+            AND a.category_id = #{categoryId}
+        </if>
+
+        ORDER BY
+        a.is_top DESC
+    </select>
+
+</mapper>

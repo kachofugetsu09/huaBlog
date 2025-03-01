@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="site.hnfy258.mapper.CommentMapper">
+
+    <!-- 查询根评论 -->
+    <select id="getRootComment" resultType="site.hnfy258.entity.Comment">
+        SELECT * FROM sg_comment
+        WHERE 1=1
+        <if test="articleId != null">
+            AND sg_comment.article_id = #{articleId}
+        </if>
+        AND root_id = -1
+        AND type = #{commentType}
+    </select>
+
+    <select id="getChildren" resultType="site.hnfy258.entity.Comment">
+        SELECT * FROM sg_comment
+        WHERE 1=1
+        <if test="articleId != null">
+            AND sg_comment.article_id = #{articleId}
+        </if>
+        AND root_id = #{id}
+        AND type = #{commentType}
+    </select>
+
+</mapper>
