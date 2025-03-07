@@ -18,5 +18,9 @@ public interface UserMapper extends BaseMapper<User> {
     User getUserById(Long id);
     @Select("select * from sys_user where user_name = #{userName}")
     User getUserByName(String s);
+    @Select("select avatar from sys_user where id = #{id}")
+    String getAvatarById(Long id);
+    @Select("select nick_name from sys_user where id =#{otherUserId}")
+    String getNicknameById(Long otherUserId);
 }
 

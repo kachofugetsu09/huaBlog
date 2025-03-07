@@ -21,7 +21,7 @@ export function login(userName, password, code, uuid) {
 // 注册方法
 export function register(data) {
   return request({
-    url: '/user/register',
+    url: '/register',
     headers: {
       isToken: false
     },
@@ -33,7 +33,7 @@ export function register(data) {
 // 获取用户详细信息
 export function getInfo() {
   return request({
-    url: '/user/getInfo',
+    url: '/getInfo',
     method: 'get'
   })
 }

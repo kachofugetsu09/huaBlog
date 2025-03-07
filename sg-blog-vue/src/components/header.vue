@@ -13,7 +13,7 @@
 							<el-menu-item v-for="(item,index) in classListObj" :key="'class1'+index" :index="'/Share?classId='+item.id">{{item.name}}</el-menu-item>
 						</el-submenu>
 						<el-menu-item index="/Friendslink"><i class="fa fa-wa fa-users"></i>友链</el-menu-item>
-
+            <el-menu-item index="/Chat"><i class="fa fa-wa"> 私信</i></el-menu-item>
 						<div class="userInfo">
 							<div v-show="!haslogin" class="nologin">
 								<a href="javascript:void(0);" @click="logoinFun(1)">登录&nbsp;</a>|<a href="javascript:void(0);" @click="logoinFun(0)">&nbsp;注册</a>

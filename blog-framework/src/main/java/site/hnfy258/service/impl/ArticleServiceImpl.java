@@ -67,7 +67,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> articles = articleMapper.getArticleList(categoryId, SystemConstants.ARTICLE_STATUS_NORMAL);
 
         // 将查询结果转换为 VO 对象
-        List<ArticleListVo> articleListVos = BeanCopyUtils.copyBeanList(articles, ArticleListVo.class);
+        List<ArticleListVo> articleListVos = articles.stream().map(article -> {
+            ArticleListVo vo = BeanCopyUtils.copyBean(article, ArticleListVo.class);
+            String content = article.getContent();
+            int wordCount = 0;
+            if (StringUtils.hasText(content)) {
+                wordCount = content.replaceAll("</?[^>]+>", "").length();
+            }
+
+            // 设置字数
+            vo.setWordCount(wordCount);
+
+            return vo;
+        }).collect(Collectors.toList());
 
         // 获取分页信息
         PageInfo<Article> pageInfo = new PageInfo<>(articles);
@@ -90,7 +102,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setViewCount(viewCount.longValue());
         //转换成VO
         ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
-        //根据分类id查询分类名
+        //根据分类id查询分类
         Long categoryId = articleDetailVo.getCategoryId();
         Category category = categoryService.getById(categoryId);
         if(category!=null){
@@ -136,7 +148,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         queryWrapper.like(StringUtils.hasText(article.getTitle()),Article::getTitle, article.getTitle());
         queryWrapper.like(StringUtils.hasText(article.getSummary()),Article::getSummary, article.getSummary());
 
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Article> page = new Page<>();
+        Page<Article> page = new Page<>();
         page.setCurrent(pageNum);
         page.setSize(pageSize);
         page(page,queryWrapper);

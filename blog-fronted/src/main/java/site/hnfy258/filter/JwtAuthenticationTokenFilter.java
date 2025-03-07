@@ -1,6 +1,7 @@
 package site.hnfy258.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.LoginUser;
 import site.hnfy258.enums.AppHttpCodeEnum;
@@ -32,6 +33,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //获取请求头中的token
         String token = request.getHeader("token");
+        System.out.println("token is"+token);
         if(!StringUtils.hasText(token)){
             //说明该接口不需要登录  直接放行
             filterChain.doFilter(request, response);
@@ -46,7 +48,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             //token超时  token非法
             //响应告诉前端需要重新登录
             ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
-            WebUtils.renderString(response, JSON.toJSONString(result));
+            WebUtils.renderString(response, JSONObject.toJSONString(result));
             return;
         }
         String userId = claims.getSubject();

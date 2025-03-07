@@ -59,8 +59,14 @@ export default new Router({
 			},
 			name: 'FriendsLink'
 		}, //友链
-
-
+    {
+      path: '/Chat',
+      component: resolve => require(['../pages/ChatPage.vue'], resolve),
+      meta: {
+        auth: true
+      },
+      name: 'Chat'
+    },
 		{
 			path: '/Login',
 			component: resolve => require(['../pages/Login.vue'], resolve),
@@ -68,7 +74,9 @@ export default new Router({
 				auth: false
 			},
 			name: 'Login'
-		}, //注册登录
+		},
+    //注册登录
+
 		{
 			path: '/UserInfo',
 			component: resolve => require(['../pages/UserInfo.vue'], resolve),

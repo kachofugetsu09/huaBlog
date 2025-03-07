@@ -21,6 +21,7 @@ public class CommentVo {
     //所回复的目标评论的userid
     private Long toCommentUserId;
     private String toCommentUserName;
+    private String avatar;
     //回复目标评论id
     private Long toCommentId;
 

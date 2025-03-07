@@ -1,14 +1,17 @@
 package site.hnfy258.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import site.hnfy258.Exception.SystemException;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
 import site.hnfy258.entity.User;
@@ -34,70 +37,83 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Autowired
-    private CommentMapper commentMapper;
-    @Autowired
     private UserService userService;
 
-    /**
-     * @param entity
-     * @return
-     */
-
-
-    /**
-     * @param articleId
-     * @param pageNum
-     * @param pageSize
-     * @return
-     */
     @Override
     public PageVo commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
-        // 分页查询根评论
-        PageHelper.startPage(pageNum, pageSize);
-        List<Comment> rootCommentList = commentMapper.getRootComment(articleId, commentType);
-        Page<Comment> page = (Page<Comment>) rootCommentList;
+        //查询对应文章的根评论
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        //对articleId进行判断
+        queryWrapper.eq(SystemConstants.ARTICLE_COMMENT.equals(commentType),Comment::getArticleId,articleId);
+        //根评论 rootId为-1
+        queryWrapper.eq(Comment::getRootId,-1);
 
-        // 转换为 CommentVo
-        List<CommentVo> commentVoList = BeanCopyUtils.copyBeanList(page.getResult(), CommentVo.class);
+        //评论类型
+        queryWrapper.eq(Comment::getType,commentType);
 
-        // 设置用户名和子评论
+        //分页查询
+        Page<Comment> page = new Page(pageNum,pageSize);
+        page(page,queryWrapper);
+
+        List<CommentVo> commentVoList = toCommentVoList(page.getRecords());
+
+        //查询所有根评论对应的子评论集合，并且赋值给对应的属性
         for (CommentVo commentVo : commentVoList) {
-            // 设置用户名
-            commentVo.setUsername(userService.getNickName(userService.getById(commentVo.getCreateBy())));
-
-            // 查询子评论
-            List<Comment> childrenCommentList = commentMapper.getChildren(articleId, commentVo.getId(), commentType);
-            List<CommentVo> childrenCommentVoList = BeanCopyUtils.copyBeanList(childrenCommentList, CommentVo.class);
-
-            // 设置子评论的用户名
-            for (CommentVo childCommentVo : childrenCommentVoList) {
-                childCommentVo.setUsername(userService.getNickName(userService.getById(childCommentVo.getCreateBy())));
-                if (childCommentVo.getToCommentUserId() != null) {
-                    String toCommentUserName = userService.getNickName(userService.getById(childCommentVo.getToCommentUserId()));
-                    childCommentVo.setToCommentUserName(toCommentUserName);
-                }
-            }
-
-            // 设置子评论
-            commentVo.setChildren(childrenCommentVoList);
+            //查询对应的子评论
+            List<CommentVo> children = getChildren(commentVo.getId());
+            //赋值
+            commentVo.setChildren(children);
         }
 
-        // 返回分页结果
-        return new PageVo(commentVoList, page.getTotal());
+        return new PageVo(commentVoList,page.getTotal());
     }
 
-
-    /**
-     * @param comment
-     * @return
-     */
     @Override
     public void addComment(Comment comment) {
-        if(comment.getContent() == null){
+        //评论内容不能为空
+        if(!StringUtils.hasText(comment.getContent())){
             throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
         }
-
         save(comment);
+    }
+
+    /**
+     * 根据根评论的id查询所对应的子评论的集合
+     * @param id 根评论的id
+     * @return
+     */
+    private List<CommentVo> getChildren(Long id) {
+
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getRootId,id);
+        queryWrapper.orderByAsc(Comment::getCreateTime);
+        List<Comment> comments = list(queryWrapper);
+
+        List<CommentVo> commentVos = toCommentVoList(comments);
+        return commentVos;
+    }
+
+    private List<CommentVo> toCommentVoList(List<Comment> list) {
+        List<CommentVo> commentVos = BeanCopyUtils.copyBeanList(list, CommentVo.class);
+        // 遍历vo集合
+        for (CommentVo commentVo : commentVos) {
+            // 通过 createBy 查询用户的昵称和头像并赋值
+            if (commentVo.getCreateBy() != null) {
+                User user = userService.getById(commentVo.getCreateBy());
+                if (user != null) {
+                    commentVo.setUsername(user.getNickName());
+                    commentVo.setAvatar(user.getAvatar() != null ? user.getAvatar() : "");
+                }
+            }
+            // 通过 toCommentUserId 查询用户的昵称和头像并赋值
+            if (commentVo.getToCommentUserId() != null && commentVo.getToCommentUserId() != -1) {
+                User toCommentUser = userService.getById(commentVo.getToCommentUserId());
+                if (toCommentUser != null) {
+                    commentVo.setToCommentUserName(toCommentUser.getNickName());
+                }
+            }
+        }
+        return commentVos;
     }
 }
 

@@ -168,6 +168,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
 
+
+
     public void insertUserRole(User user){
         List<UserRole> userRoleList = Arrays.stream(user.getRoleIds()).
                 map(roleId-> new UserRole(user.getId(),roleId)).collect(Collectors.toList());

@@ -7,6 +7,8 @@ import org.springframework.web.multipart.MultipartFile;
 import site.hnfy258.annotation.SystemLog;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.service.UploadService;
+import site.hnfy258.service.UserService;
+import site.hnfy258.utils.SecurityUtils;
 
 @RestController
 public class UploadController {

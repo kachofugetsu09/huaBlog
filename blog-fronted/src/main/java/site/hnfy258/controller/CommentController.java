@@ -29,7 +29,7 @@ public class CommentController {
         return ResponseResult.okResult(pageVo);
     }
     @SystemLog(bussinessName = "添加评论信息")
-    @PostMapping
+    @PostMapping("/addComment")
     public ResponseResult addComment(@RequestBody Comment comment) {
         commentService.addComment(comment);
         return ResponseResult.okResult();

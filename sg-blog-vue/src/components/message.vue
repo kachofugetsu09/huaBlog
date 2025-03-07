@@ -40,18 +40,22 @@
                 <ul class="tmsg-commentlist">
                     <li class="tmsg-c-item" v-for="(item,index) in commentList" :key="'common'+index">
                         <article class="">
-                            <header>
-                                <img  :src="$store.state.errorImg"  :onerror="$store.state.errorImg">
-                                <div class="i-name">
-                                    {{item.username}}
-                                </div>
-                                <!-- <div class="i-class">
-                                    {{item.label}}
-                                </div> -->
-                                <div class="i-time">
-                                    <time>{{item.createTime}}</time>
-                                </div>
-                            </header>
+                          <header >
+                            <img
+                              :src="item.avatar || $store.state.errorImg"
+                              :onerror="$store.state.errorImg"
+                              alt="User Avatar"
+                              class="avatar"
+                              @click="handleAvatarClick(item.createBy)"
+                              style="cursor: pointer;"
+                            />
+                            <div class="i-name">
+                              {{ item.username }}
+                            </div>
+                            <div class="i-time">
+                              <time>{{ item.createTime }}</time>
+                            </div>
+                          </header>
                             <section>
                                 <p v-html="analyzeEmoji(item.content)">{{analyzeEmoji(item.content)}}</p>
                                 <div v-if="haslogin" class="tmsg-replay" @click="respondMsg(item.id,item.id,item.createBy)">
@@ -62,15 +66,20 @@
                         <ul v-show="item.children" class="tmsg-commentlist" style="padding-left:60px;">
                             <li class="tmsg-c-item" v-for="(citem,cindex) in item.children" :key="'citem'+cindex">
                                 <article class="">
-                                    <header>
-                                            <img :src="$store.state.errorImg"  :onerror="$store.state.errorImg">
-                                            <div class="i-name">
-                                                {{citem.username}} <span>回复</span> {{citem.toCommentUserName}}
-                                            </div>
-                                            <div class="i-time">
-                                                <time>{{citem.createTime}}</time>
-                                            </div>
-                                    </header>
+                                  <header>
+                                    <img :src="citem.avatar || $store.state.errorImg"
+                                         :onerror="$store.state.errorImg"
+                                         alt="User Avatar"
+                                         class="avatar"
+                                         @click="handleAvatarClick(citem.createBy)"
+                                         style="cursor: pointer;">
+                                    <div class="i-name">
+                                      {{citem.username}} <span>回复</span> {{citem.toCommentUserName}}
+                                    </div>
+                                    <div class="i-time">
+                                      <time>{{citem.createTime}}</time>
+                                    </div>
+                                  </header>
                                     <section>
                                         <p v-html="analyzeEmoji(citem.content)">{{citem.content}}</p>
                                         <div v-show="haslogin" class="tmsg-replay" @click="respondMsg(item.id,citem.id,citem.createBy)">
@@ -206,9 +215,19 @@
                     //加载更多
                     this.commentList = this.commentList.concat(msg);
                 }
-                
+
                 this.hasMore = result.total>this.commentList.length
               },
+          handleAvatarClick(userId) {
+            if (!userId) {
+              console.error("用户ID未定义");
+              return;
+            }
+
+            // Emit event to parent component
+            this.$emit('avatar-click', userId);
+
+          },
           //选择表情包
           choseEmoji:function(inner){
               this.textarea +='[' + inner + ']';
@@ -304,7 +323,7 @@
               }
 
               //公用设置数据方法
-              
+
               if(that.$route.name=='DetailArticle'){//文章列表的评论
                   that.type = 0;
                   getArticleComment(that.queryParams).then((response)=>{
@@ -656,6 +675,12 @@
     font-size: 12px;
     color:#64609E;
     cursor: pointer;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
 
 </style>

@@ -47,6 +47,7 @@ public class SecurityUtils
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("获取用户ID异常");
         }
         return -1L;
     }

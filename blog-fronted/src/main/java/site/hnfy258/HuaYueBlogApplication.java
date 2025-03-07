@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-@SpringBootApplication
+@SpringBootApplication(exclude={com.github.pagehelper.autoconfigure.PageHelperAutoConfiguration.class},scanBasePackages = {"site.hnfy258"})
 @MapperScan("site.hnfy258.mapper")
 @EnableScheduling
 @EnableSwagger2

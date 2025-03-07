@@ -2,7 +2,7 @@
 <template>
     <el-row class="sharelistBox">
 
-        <el-col :span="24" class="s-item tcommonBox" v-for="(item,index) in articleList" :key="'article'+index">
+        <el-col :span="24" class="s-item tcommonBox shadow-effect" v-for="(item,index) in articleList" :key="'article'+index">
             <span class="s-round-date">
                 <span class="month" v-html="showInitDate(item.createTime,'month')+'月'"></span>
                 <span class="day" v-html="showInitDate(item.createTime,'date')"></span>
@@ -15,8 +15,9 @@
                 </h1>
                 <h2>
                     <i class="fa fa-fw fa-user"></i>发表于
-                    <i class="fa fa-fw fa-clock-o"></i><span v-html="showInitDate(item.createTime,'all')">{{showInitDate(item.createTime,'all')}}</span> •
-                    <i class="fa fa-fw fa-eye"></i>{{item.viewCount}} 次围观 •
+                  <i class="fa fa-fw fa-clock-o"></i><span v-html="showInitDate(item.createTime, 'all')"></span> •
+                  <span v-if="item.wordCount">{{item.wordCount}}字</span>
+                  <i class="fa fa-fw fa-eye"></i>{{item.viewCount}} 次围观 •
 
                 </h2>
                 <div class="ui label">
@@ -155,4 +156,22 @@ import {articleList} from '../api/article'
     /*.sharelistBox .viewmore a:hover,.s-item .viewdetail a:hover{
         background: #48456C;
     }*/
+
+/* 阴影效果样式 */
+.shadow-effect {
+  background-color: #fff; /* 背景颜色可以根据需要调整 */
+  padding: 20px; /* 内边距让内容与边框有一定距离 */
+  border-radius: 8px; /* 圆角效果 */
+  box-shadow:
+    -15px -15px 30px rgba(255, 255, 255, 0.8), /* 左上角高光，更亮更明显 */
+    15px 15px 30px rgba(0, 0, 0, 0.2); /* 右下角阴影，更深更明显 */
+  transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+/* 鼠标悬停时的阴影增强效果 */
+.shadow-effect:hover {
+  box-shadow:
+    -20px -20px 40px rgba(255, 255, 255, 0.9), /* 更亮的左上角高光 */
+    20px 20px 40px rgba(0, 0, 0, 0.3); /* 更深的右下角阴影 */
+}
 </style>

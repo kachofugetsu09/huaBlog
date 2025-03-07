@@ -1,5 +1,6 @@
 package site.hnfy258.VO;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ public class ArticleListVo {
     private String categoryName;
     //缩略图
     private String thumbnail;
+    @TableField(exist = false)
+    private Integer wordCount;
 
 
     //访问量
