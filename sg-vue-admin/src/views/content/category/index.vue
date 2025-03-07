@@ -229,7 +229,7 @@ export default {
     handleUpdate(row) {
       this.reset()
       const id = row.id || this.ids
-      getCategory(id).then(response => {
+      getCategory(id).then((response) => {
         this.form = response
         this.open = true
         this.title = '修改分类'

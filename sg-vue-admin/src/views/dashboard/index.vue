@@ -1,7 +1,10 @@
 <template>
-  <div class="dashboard-container">
-    <div class="dashboard-text">
-      花月博客管理系统
+  <div class="dashboard-container" id="#login-img">
+    <div class="dashboard-text" style="font-weight: bolder">
+      个人博客管理系统
+    </div>
+    <div>
+      基于SpringBoot + MyBatis-Plus + SpringSecurity + Vue的个人博客管理系统。
     </div>
   </div>
 </template>
@@ -28,4 +31,5 @@ export default {
     line-height: 46px;
   }
 }
+
 </style>

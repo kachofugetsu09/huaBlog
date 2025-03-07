@@ -14,7 +14,7 @@
 
       <el-form-item prop="userName">
         <span class="svg-container">
-          <svg-icon icon-class="user" />
+          <svg-icon icon-class="user"/>
         </span>
         <el-input
           ref="userName"
@@ -29,7 +29,7 @@
 
       <el-form-item prop="password">
         <span class="svg-container">
-          <svg-icon icon-class="password" />
+          <svg-icon icon-class="password"/>
         </span>
         <el-input
           :key="passwordType"
@@ -54,7 +54,8 @@
         type="primary"
         style="width: 100%; margin-bottom: 30px"
         @click.native.prevent="handleLogin"
-      >Login</el-button>
+      >Login
+      </el-button>
 
       <div class="tips">
         <span style="margin-right: 20px">userName: sg</span>
@@ -86,8 +87,8 @@ export default {
     }
     return {
       loginForm: {
-        userName: 'sg',
-        password: '1234'
+        userName: 'zhangsan',
+        password: 'zhangsan'
       },
       loginRules: {
         userName: [
