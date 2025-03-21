@@ -39,4 +39,9 @@ build/
 
 #configPrivate
 blog-fronted/src/main/resources/application-dev.yml
+blog-fronted/src/main/resources/application.yml
 blog-admin/src/main/resources/application-dev.yml
+blog-admin/src/main/resources/application.yml
+blog-framework/src/main/java/site/hnfy258/service/UploadService.java
+/sg-vue-admin/admin_dist/
+/sg-blog-vue/dist/
