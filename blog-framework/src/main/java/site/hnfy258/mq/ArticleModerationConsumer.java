@@ -36,8 +36,10 @@ public class ArticleModerationConsumer implements RocketMQListener<String> {
                 logger.info("文章 {} 审核通过", article.getId());
                 moderationService.approveArticle(article.getId());
             } else {
-                // 如果内容不安全，记录日志，此时文章状态仍为草稿
+
                 logger.warn("文章 {} 包含敏感内容，审核不通过", article.getId());
+                moderationService.rejectArticle(article.getId());
+                logger.info("审核不通过，状态成功修改，文章ID: {}", article.getId());
             }
         } catch (Exception e) {
             logger.error("处理文章审核消息时发生错误", e);

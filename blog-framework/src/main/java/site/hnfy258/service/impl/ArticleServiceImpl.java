@@ -166,7 +166,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             log.info("发送文章审核消息成功，文章ID: {}", article.getId());
         } catch (Exception e) {
             log.error("发送文章审核消息失败", e);
-            // 如果发送消息失败，可以考虑直接进行同步审核
+
             if (moderationService.checkArticleContent(article)) {
                 moderationService.approveArticle(article.getId());
             }

@@ -16,4 +16,6 @@ public interface ArticleModerationService {
      * @param articleId 文章ID
      */
     void approveArticle(Long articleId);
+
+    void rejectArticle(Long articleId);
 }

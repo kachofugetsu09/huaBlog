@@ -35,7 +35,7 @@ public class Article {
     private String thumbnail;
     //是否置顶（0否，1是）
     private String isTop;
-    //状态（0已发布，1草稿）
+    //状态（0已发布，1草稿,2审核未通过）
     private String status;
     //访问量
     private Long viewCount;
