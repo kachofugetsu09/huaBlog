@@ -3,29 +3,27 @@ package site.hnfy258.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import site.hnfy258.entity.Article;
+import site.hnfy258.DTO.NotificationMessage;
 import site.hnfy258.Exception.SystemException;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
 import site.hnfy258.constants.SystemConstants;
-import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
 import site.hnfy258.entity.User;
 import site.hnfy258.enums.AppHttpCodeEnum;
+import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.mapper.CommentMapper;
 import site.hnfy258.service.CommentService;
 import site.hnfy258.service.UserService;
 import site.hnfy258.utils.BeanCopyUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 评论表(Comment)表服务实现类
@@ -33,11 +31,18 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2025-02-09 04:31:26
  */
+@Slf4j
 @Service("commentService")
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    private ArticleMapper articleMapper;
 
     @Override
     public PageVo commentList(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
@@ -75,6 +80,41 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
         }
         save(comment);
+
+        sendCommentNotification(comment);
+    }
+
+    private void sendCommentNotification(Comment comment) {
+        try{
+
+            NotificationMessage notification = new NotificationMessage();
+            notification.setCommentId(comment.getId());
+            notification.setCommentType(comment.getType());
+            Long userFromId = comment.getCreateBy();
+            User userFrom = userService.getById(userFromId);
+            notification.setFromUserId(userFromId);
+            notification.setFromUserAvatar(userFrom.getAvatar());
+            notification.setFromUserNickName(userFrom.getNickName());
+            notification.setArticleId(comment.getArticleId());
+            notification.setCreateTime(comment.getCreateTime());
+
+            Long toUserId;
+            if(comment.getToCommentUserId() ==-1){
+                Article article = articleMapper.getById(comment.getArticleId());
+                toUserId = article.getCreateBy();
+                notification.setToUserId(toUserId);
+            }
+            else {
+                toUserId = comment.getToCommentUserId();
+               notification.setToUserId(toUserId);
+            }
+
+            if(toUserId != null && toUserId != userFromId){
+                rocketMQTemplate.convertAndSend("comment-topic",notification);
+            }
+        }catch(Exception e){
+            log.error("发送评论通知失败",e);
+        }
     }
 
     /**

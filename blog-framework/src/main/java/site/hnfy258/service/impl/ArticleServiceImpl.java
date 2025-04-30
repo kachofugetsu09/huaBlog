@@ -11,6 +11,7 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,7 +32,9 @@ import com.github.pagehelper.PageHelper;
 import site.hnfy258.utils.RedisCache;
 import site.hnfy258.utils.SecurityUtils;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -140,6 +143,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     @Transactional
     public void add(ArticleDto articleDTO) {
+        log.info("添加文章：{}", articleDTO);
         Article article = new Article();
         BeanUtils.copyProperties(articleDTO,article);
         Long userId = SecurityUtils.getUserId();

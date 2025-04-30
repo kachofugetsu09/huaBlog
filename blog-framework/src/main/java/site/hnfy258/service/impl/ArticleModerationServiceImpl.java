@@ -1,21 +1,12 @@
 package site.hnfy258.service.impl;
 
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import site.hnfy258.entity.Article;
 import site.hnfy258.mapper.ArticleMapper;
 import site.hnfy258.service.ArticleModerationService;
 import site.hnfy258.service.SensitiveWordService;
 
-import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
 
 @Service
 public class ArticleModerationServiceImpl implements ArticleModerationService {
