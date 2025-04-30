@@ -90,7 +90,10 @@ export default {
         return [];
       }
       this.error = '';
-      return this.sessionResponse.data;
+      // 按最后消息时间排序，最新的在前
+      return [...this.sessionResponse.data].sort((a, b) => {
+        return new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0);
+      });
     },
     filteredSessions() {
       console.log('过滤会话，当前会话列表:', this.sessions);

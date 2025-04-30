@@ -87,8 +87,8 @@ export default {
       pendingMessages: [],
       currentUserId: this.$store.getters.userId || localStorage.getItem('userId'),
       defaultAvatar: require('../../static/img/touxiang.jpg'),
-      isScrolling: false, // 用户是否正在手动滚动
-      shouldScrollToBottom: true // 是否应该自动滚动到底部
+      isUserScrolling: false,      // 用户是否正在手动滚动
+      shouldScrollToBottom: true   // 是否应该自动滚动到底部
     };
   },
   computed: {
@@ -100,63 +100,94 @@ export default {
     }
   },
   watch: {
-    sessionId(newVal, oldVal) {
-      console.log('ChatMessage: sessionId已变更为', newVal);
-      // 会话ID变更时，重置滚动标志并滚动到底部
-      this.shouldScrollToBottom = true;
-      this.isScrolling = false;
-      this.$nextTick(() => {
-        this.scrollToBottom();
-      });
-    },
     messages: {
       handler(newVal, oldVal) {
-        console.log('ChatMessage: 消息列表已更新', newVal.length);
+        // 只有当消息是新增的（而不是更新或删除）时才自动滚动
+        const isNewMessageAdded = newVal.length > oldVal.length;
 
-        // 只有当应该滚动到底部时才执行滚动
-        if (this.shouldScrollToBottom && !this.isScrolling) {
+        // 如果用户没有手动滚动或新增了消息，则滚动到底部
+        if ((!this.isUserScrolling || isNewMessageAdded) && this.shouldScrollToBottom) {
           this.$nextTick(() => {
             this.scrollToBottom();
           });
         }
       },
-      deep: true // 添加深度监听以确保检测到消息数组内部的变化
+      deep: true,
+      immediate: true
+    },
+    sessionId: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          // 会话切换时重置滚动状态并滚动到底部
+          this.shouldScrollToBottom = true;
+          this.isUserScrolling = false;
+          this.$nextTick(() => {
+            this.scrollToBottom();
+          });
+        }
+      }
     }
   },
+
   mounted() {
-    console.log('ChatMessage: 组件已挂载');
-    // 确保DOM完全渲染后再滚动
+    // 初始化时滚动到底部
     this.$nextTick(() => {
       this.scrollToBottom();
     });
-    // 焦点放在输入框
-    this.$refs.messageInput.focus();
+
+    // 设置滚动监听
+    if (this.$refs.messageContainer) {
+      this.$refs.messageContainer.addEventListener('scroll', this.handleScroll);
+    }
   },
+
+
   beforeDestroy() {
-    // 清理事件监听器，防止内存泄漏
+    // 移除滚动监听
     if (this.$refs.messageContainer) {
       this.$refs.messageContainer.removeEventListener('scroll', this.handleScroll);
     }
   },
+
   methods: {
     handleScroll() {
       if (!this.$refs.messageContainer) return;
 
       const container = this.$refs.messageContainer;
       const { scrollTop, scrollHeight, clientHeight } = container;
-
-      // 计算距离底部的像素数
       const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
-      // 如果距离底部小于20像素，认为用户已滚动到底部
-      if (distanceFromBottom < 20) {
-        this.isScrolling = false;
+      // 如果距离底部小于50像素，认为用户已滚动到底部
+      this.isUserScrolling = distanceFromBottom > 50;
+      this.shouldScrollToBottom = !this.isUserScrolling;
+
+      // 如果用户滚动到接近底部，自动切换回自动滚动模式
+      if (distanceFromBottom < 50) {
+        this.isUserScrolling = false;
         this.shouldScrollToBottom = true;
-      } else {
-        // 用户已滚动到其他位置
-        this.isScrolling = true;
-        this.shouldScrollToBottom = false;
       }
+    },
+
+    scrollToBottom() {
+      const wrapper = this.$refs.messageListWrapper
+      if (!wrapper) return
+
+      // 先立即跳转到底部
+      wrapper.scrollTop = wrapper.scrollHeight
+
+      // 然后使用平滑滚动（双保险）
+      setTimeout(() => {
+        wrapper.scrollTo({
+          top: wrapper.scrollHeight,
+          behavior: 'smooth'
+        })
+      }, 50)
+
+      // 最后再确保一次（应对极端情况）
+      setTimeout(() => {
+        wrapper.scrollTop = wrapper.scrollHeight
+      }, 200)
     },
 
     addMessage(message) {
@@ -258,7 +289,7 @@ export default {
 
       // 发送新消息时，重置滚动标志
       this.shouldScrollToBottom = true;
-      this.isScrolling = false;
+      this.isUserScrolling = false;
 
       const tempMessage = {
         id: 'temp_' + Date.now(),
@@ -366,29 +397,18 @@ export default {
       }
     },
 
-    scrollToBottom() {
-      // 改进的滚动方法，确保可靠地滚动到底部
-      if (this.$refs.messageContainer) {
-        const container = this.$refs.messageContainer;
-
-        // 使用更可靠的方式强制滚动到底部
-        setTimeout(() => {
-          if (this.shouldScrollToBottom && !this.isScrolling) {
-            container.scrollTop = container.scrollHeight;
-          }
-        }, 0);
-      }
-    }
   }
 };
 </script>
 <style scoped>
 .chat-message-container {
+  flex:1;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden;
+  overflow: auto;
   background-color: #f5f5f5;
+  position: relative;
 }
 
 .debug-panel {
@@ -415,6 +435,9 @@ export default {
   padding: 15px;
   display: flex;
   flex-direction: column;
+  overflow: auto;
+  min-height: 0;
+  position: relative;
 }
 
 .message-item {

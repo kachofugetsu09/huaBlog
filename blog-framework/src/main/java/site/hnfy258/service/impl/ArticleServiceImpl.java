@@ -1,12 +1,18 @@
 package site.hnfy258.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendResult;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import site.hnfy258.DTO.ArticleDto;
 import site.hnfy258.VO.*;
@@ -15,18 +21,21 @@ import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Article;
 import site.hnfy258.entity.ArticleTag;
 import site.hnfy258.entity.Category;
+import site.hnfy258.entity.User;
 import site.hnfy258.mapper.ArticleMapper;
+import site.hnfy258.service.ArticleModerationService;
 import site.hnfy258.service.ArticleService;
 import site.hnfy258.service.CategoryService;
 import site.hnfy258.utils.BeanCopyUtils;
 import com.github.pagehelper.PageHelper;
 import site.hnfy258.utils.RedisCache;
+import site.hnfy258.utils.SecurityUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-
+@Slf4j
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
     /**
      * @return
@@ -40,6 +49,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private CategoryService categoryService;
     @Autowired
     private ArticleTagServiceImpl articleTagService;
+
+    @Autowired
+    private ArticleModerationService moderationService;
+
+    @Autowired
+    private RocketMQTemplate rocketMQTemplate;
     @Override
     public List<HotArticleVo> hotArticleList() {
         List<Article> articleList = articleMapper.selectHotArticleList();
@@ -123,9 +138,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param articleDTO
      */
     @Override
+    @Transactional
     public void add(ArticleDto articleDTO) {
         Article article = new Article();
         BeanUtils.copyProperties(articleDTO,article);
+        Long userId = SecurityUtils.getUserId();
+        article.setCreateBy(userId);
+        // 设置状态为草稿(1)，等待审核通过后改为已发布(0)
+        article.setStatus("1");
         save(article);
         System.out.println(article.getId());
 
@@ -133,7 +153,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 tagId ->new ArticleTag(article.getId(),tagId)
         ).collect(Collectors.toList());
         articleTagService.saveBatch(articleTags);
+
+        // 将文章发送到RocketMQ进行内容审核
+        try {
+            String jsonArticle = JSON.toJSONString(article);
+            // 使用RocketMQTemplate的convertAndSend方法替代send方法
+            rocketMQTemplate.convertAndSend(
+                    "article-moderation-topic:article",  // destination (topic:tag)
+                    jsonArticle                          // payload
+            );
+
+            log.info("发送文章审核消息成功，文章ID: {}", article.getId());
+        } catch (Exception e) {
+            log.error("发送文章审核消息失败", e);
+            // 如果发送消息失败，可以考虑直接进行同步审核
+            if (moderationService.checkArticleContent(article)) {
+                moderationService.approveArticle(article.getId());
+            }
+        }
     }
+
 
     /**
      * @param article

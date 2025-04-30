@@ -9,6 +9,7 @@ import site.hnfy258.annotation.SystemLog;
 import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
+import site.hnfy258.filter.ContentFilter;
 import site.hnfy258.service.CommentService;
 
 @RestController
@@ -17,6 +18,8 @@ import site.hnfy258.service.CommentService;
 public class CommentController {
     @Autowired
     private CommentService commentService;
+    @Autowired
+    private ContentFilter contentFilter;
     ;
     @SystemLog(bussinessName = "显示评论列表")
     @GetMapping("/commentList")
@@ -31,6 +34,10 @@ public class CommentController {
     @SystemLog(bussinessName = "添加评论信息")
     @PostMapping("/addComment")
     public ResponseResult addComment(@RequestBody Comment comment) {
+        String userId = comment.getCreateBy().toString();
+        if(contentFilter.isRepeatedAttack(comment.getContent(),userId)){
+            return ResponseResult.errorResult(400,"请勿重复评论");
+        }
         commentService.addComment(comment);
         return ResponseResult.okResult();
     }

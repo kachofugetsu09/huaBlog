@@ -23,6 +23,7 @@ import site.hnfy258.utils.SecurityUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -46,16 +47,36 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Messages> implement
 
     @Override
     public List<MessagesVo> getSessions(Long currentUserId) {
-        // 查询当前用户的所有会话
+        String cacheKey = "chat:sessions:" + currentUserId;
+
+        try {
+            // 1. 尝试从缓存获取
+            List<MessagesVo> cachedSessions = (List<MessagesVo>) redisTemplate.opsForValue().get(cacheKey);
+            if (cachedSessions != null && !cachedSessions.isEmpty()) {
+                return cachedSessions;
+            }
+        } catch (Exception e) {
+            log.error("获取会话缓存失败", e);
+        }
+
+        // 2. 从数据库查询
         LambdaQueryWrapper<Sessions> sessionQuery = new LambdaQueryWrapper<>();
         sessionQuery.eq(Sessions::getUser1Id, currentUserId)
                 .or(i -> i.eq(Sessions::getUser2Id, currentUserId));
         List<Sessions> sessions = sessionMapper.selectList(sessionQuery);
 
-        // 转换为 VO 对象
-        return sessions.stream()
-                .map(session -> convertToMessagesVo(session, currentUserId)) // 显式传递参数
+        // 3. 转换为VO并缓存
+        List<MessagesVo> result = sessions.stream()
+                .map(session -> convertToMessagesVo(session, currentUserId))
                 .collect(Collectors.toList());
+
+        try {
+            redisTemplate.opsForValue().set(cacheKey, result, 10, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("缓存会话列表失败", e);
+        }
+
+        return result;
     }
 
 
@@ -106,7 +127,6 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Messages> implement
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Redis 异常时直接查询数据库
         }
 
         // 2. 缓存未命中：从数据库加载数据
@@ -202,16 +222,11 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Messages> implement
     public void sendMessage(Messages message) {
         // 验证消息长度
         final int MAX_MESSAGE_LENGTH = 500;
-
-        if (message.getContent() == null) {
-            throw new IllegalArgumentException("消息内容不能为空");
+        if (message.getContent() == null || message.getContent().length() > MAX_MESSAGE_LENGTH) {
+            throw new IllegalArgumentException("消息内容无效");
         }
 
-        if (message.getContent().length() > MAX_MESSAGE_LENGTH) {
-            throw new IllegalArgumentException("消息长度不能超过" + MAX_MESSAGE_LENGTH + "个字符");
-        }
-
-        // 强制设置发送者和接收者ID
+        // 设置发送者和接收者ID
         Long currentUserId = SecurityUtils.getLoginUser().getUser().getId();
         message.setSenderId(currentUserId);
         Sessions session = sessionMapper.selectById(message.getSessionId());
@@ -221,23 +236,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Messages> implement
                         : session.getUser1Id()
         );
 
-        // 保存到数据库
-        chatMapper.insert(message);
-
-        // 发送到Redis Stream
+        // 只发送到Redis Stream，不再直接操作数据库
         redisMessageService.sendMessage(message);
-
-        // 清理缓存
-        String messagesCacheKey = "chat:messages:session:" + message.getSessionId();
-        String unreadCountKey = "chat:unread:" + message.getSessionId() + ":" + message.getReceiverId();
-        redisTemplate.delete(messagesCacheKey);
-        redisTemplate.delete(unreadCountKey);
-
-        // 额外清理会话列表缓存
-        String sessionsCacheKeyUser1 = "chat:sessions:" + session.getUser1Id();
-        String sessionsCacheKeyUser2 = "chat:sessions:" + session.getUser2Id();
-        redisTemplate.delete(sessionsCacheKeyUser1);
-        redisTemplate.delete(sessionsCacheKeyUser2);
     }
 
 
