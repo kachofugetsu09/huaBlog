@@ -4,7 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"site.hnfy258"})
 @MapperScan("site.hnfy258.mapper")
 public class BlogAdminApplication {
     public static void main(String[] args) {

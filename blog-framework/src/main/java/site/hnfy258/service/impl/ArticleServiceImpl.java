@@ -1,14 +1,12 @@
 package site.hnfy258.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.SendResult;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageInfo;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import site.hnfy258.DTO.ArticleDto;
 import site.hnfy258.VO.*;
+import site.hnfy258.config.RabbitMQConfig;
 import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Article;
@@ -37,8 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service
+
 @Slf4j
+@Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
     /**
      * @return
@@ -57,7 +57,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ArticleModerationService moderationService;
 
     @Autowired
-    private RocketMQTemplate rocketMQTemplate;
+    private RabbitTemplate rabbitTemplate;
     @Override
     public List<HotArticleVo> hotArticleList() {
         List<Article> articleList = articleMapper.selectHotArticleList();
@@ -158,13 +158,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         ).collect(Collectors.toList());
         articleTagService.saveBatch(articleTags);
 
-        // 将文章发送到RocketMQ进行内容审核
+        // 将文章发送到RabbitMQ进行内容审核
         try {
             String jsonArticle = JSON.toJSONString(article);
-            // 使用RocketMQTemplate的convertAndSend方法替代send方法
-            rocketMQTemplate.convertAndSend(
-                    "article-moderation-topic:article",  // destination (topic:tag)
-                    jsonArticle                          // payload
+            rabbitTemplate.convertAndSend(
+                RabbitMQConfig.ARTICLE_EXCHANGE,
+                RabbitMQConfig.ARTICLE_MODERATION_ROUTING_KEY,
+                jsonArticle
             );
 
             log.info("发送文章审核消息成功，文章ID: {}", article.getId());

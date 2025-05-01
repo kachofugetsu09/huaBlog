@@ -1,24 +1,23 @@
 package site.hnfy258.mq;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import site.hnfy258.DTO.NotificationMessage;
+import site.hnfy258.config.RabbitMQConfig;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Component
+
 @Slf4j
-@RocketMQMessageListener(topic = "comment-topic",consumerGroup = "comment-consumer-group")
-public class NotificationConsumer implements RocketMQListener<NotificationMessage> {
+@Component
+public class NotificationConsumer {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -28,14 +27,8 @@ public class NotificationConsumer implements RocketMQListener<NotificationMessag
     private static final String NOTIFICATION_KEY_PREFIX = "notification:user:";
     private static final String NOTIFICATION_UNREAD = "notification:unread_count:";
     private static final int DEFAULT_EXPIRES_DAYS = 7;
-    @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
 
-
-    /**
-     * @param notificationMessage
-     */
-    @Override
+    @RabbitListener(queues = RabbitMQConfig.COMMENT_NOTIFICATION_QUEUE)
     public void onMessage(NotificationMessage notificationMessage) {
         log.info("收到消息：{}", notificationMessage);
         try{

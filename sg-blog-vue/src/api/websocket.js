@@ -76,7 +76,7 @@ export function connectWebSocket(userId) {
 
   // 使用正确的协议连接WebSocket
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//localhost:7777/websocket/${userId}`;
+  const wsUrl = `${protocol}//49.232.191.22:7777/websocket/${userId}`;
 
   try {
     socket = new WebSocket(wsUrl);

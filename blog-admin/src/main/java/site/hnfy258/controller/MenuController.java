@@ -12,6 +12,7 @@ import site.hnfy258.service.MenuService;
 import site.hnfy258.utils.BeanCopyUtils;
 import site.hnfy258.utils.SystemConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -29,8 +30,11 @@ public class MenuController {
         //复用之前的selectMenuList方法。方法需要参数，参数可以用来进行条件查询，而这个方法不需要条件，所以直接new Menu()传入
         List<Menu> menus = menuService.selectMenuList(new Menu());
         List<MenuTreeVo> options =  SystemConverter.buildMenuSelectTree(menus);
+
         return ResponseResult.okResult(options);
     }
+    
+
 
     /**
      * 加载对应角色菜单列表树

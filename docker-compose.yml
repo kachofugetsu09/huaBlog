@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.11-management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP 协议端口
+      - "15672:15672" # 管理界面端口
+    volumes:
+      - ./rabbitmq/data:/var/lib/rabbitmq
+      - ./rabbitmq/logs:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

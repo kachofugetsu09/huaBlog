@@ -2,8 +2,9 @@ package site.hnfy258.entity;
 
 import java.util.Date;
 
-
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName("sys_user")
+@JsonIgnoreProperties(ignoreUnknown = true) // 忽略未知字段
 public class User  {
     //主键@TableId
     @TableId(value = "id", type = IdType.AUTO)
@@ -45,17 +47,17 @@ public class User  {
     @TableField(fill = FieldFill.INSERT)
     private Long createBy;
     @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
     @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
     //删除标志（0代表未删除，1代表已删除）
     private Integer delFlag;
 
-
     //关联角色id数组，非user表字段
     @TableField(exist = false)
     private Long[] roleIds;
-
 }

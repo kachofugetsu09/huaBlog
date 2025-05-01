@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -13,6 +13,7 @@ import site.hnfy258.DTO.NotificationMessage;
 import site.hnfy258.Exception.SystemException;
 import site.hnfy258.VO.CommentVo;
 import site.hnfy258.VO.PageVo;
+import site.hnfy258.config.RabbitMQConfig;
 import site.hnfy258.constants.SystemConstants;
 import site.hnfy258.entity.Comment;
 import site.hnfy258.entity.User;
@@ -32,14 +33,14 @@ import java.util.List;
  * @since 2025-02-09 04:31:26
  */
 @Slf4j
-@Service("commentService")
+@Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private RocketMQTemplate rocketMQTemplate;
+    private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private ArticleMapper articleMapper;
@@ -142,7 +143,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 // Verify the recipient exists
                 User recipientUser = userService.getById(toUserId);
                 if (recipientUser != null) {
-                    rocketMQTemplate.convertAndSend("comment-topic", notification);
+                    rabbitTemplate.convertAndSend(
+                        RabbitMQConfig.COMMENT_EXCHANGE, 
+                        RabbitMQConfig.COMMENT_NOTIFICATION_ROUTING_KEY, 
+                        notification
+                    );
                     log.info("Sent comment notification from user {} to user {}", userFromId, toUserId);
                 } else {
                     log.warn("Cannot send notification: recipient user with ID {} not found", toUserId);

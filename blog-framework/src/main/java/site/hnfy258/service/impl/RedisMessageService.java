@@ -47,6 +47,9 @@ public class RedisMessageService {
     private static final ExecutorService MESSAGE_HANDLER_EXECUTOR =
             Executors.newFixedThreadPool(CONSUMER_THREADS);
 
+    // 添加连接状态标志
+    private volatile boolean running = true;
+
     @PostConstruct
     public void init() {
         try {
@@ -111,13 +114,38 @@ public class RedisMessageService {
      * 消息处理器线程 - 单一职责：从Stream读取并处理消息
      */
     private class MessageHandler implements Runnable {
+        // 增加连续警告计数器
+        private int consecutiveWarnings = 0;
+        private long lastWarningTime = 0;
+        
         @Override
         public void run() {
             String threadName = Thread.currentThread().getName();
             log.info("消息处理线程{}已启动", threadName);
 
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted() && running) {
                 try {
+                    // 检查Redis连接是否可用
+                    if (!isRedisConnectionValid()) {
+                        // 控制警告日志频率，避免刷屏
+                        long now = System.currentTimeMillis();
+                        if (consecutiveWarnings == 0 || now - lastWarningTime > 30000) { // 30秒内只打印一次
+                            log.warn("Redis连接不可用，消息处理线程暂停处理");
+                            lastWarningTime = now;
+                        }
+                        consecutiveWarnings++;
+                        
+                        // 避免CPU空转，休眠更长时间
+                        Thread.sleep(5000 + Math.min(consecutiveWarnings * 1000, 25000)); // 逐渐增加休眠时间，最大30秒
+                        continue;
+                    }
+                    
+                    // 连接恢复时重置计数器
+                    if (consecutiveWarnings > 0) {
+                        log.info("Redis连接已恢复，重新开始处理消息");
+                        consecutiveWarnings = 0;
+                    }
+                    
                     // 从Stream中读取消息，阻塞等待2秒
                     List<MapRecord<String, Object, Object>> list = redisTemplate.opsForStream().read(
                             Consumer.from(CONSUMER_GROUP, CONSUMER_NAME),
@@ -142,6 +170,11 @@ public class RedisMessageService {
                         }
                     }
                 } catch (Exception e) {
+                    if (e.getMessage() != null && e.getMessage().contains("LettuceConnectionFactory was destroyed")) {
+                        log.error("Redis连接已关闭，消息处理线程将退出: {}", e.getMessage());
+                        break; // 连接已销毁，退出循环
+                    }
+                    
                     log.error("读取Redis Stream消息失败: {}", e.getMessage());
                     // 短暂暂停，避免在异常情况下CPU占用过高
                     try {
@@ -151,8 +184,10 @@ public class RedisMessageService {
                         break;
                     }
 
-                    // 处理pending消息
-                    handlePendingMessages();
+                    // 只有在Redis连接有效时才处理pending消息
+                    if (isRedisConnectionValid()) {
+                        handlePendingMessages();
+                    }
                 }
             }
             log.info("消息处理线程{}已停止", threadName);
@@ -239,15 +274,70 @@ public class RedisMessageService {
         }).join(); // 等待所有操作完成
     }
 
+    /**
+     * 检查Redis连接是否可用
+     */
+    private boolean isRedisConnectionValid() {
+        try {
+            // 简单的ping测试
+            Object result = redisTemplate.getConnectionFactory().getConnection().ping();
+            return result != null && "PONG".equals(result.toString());
+        } catch (Exception e) {
+            // 出现异常表示连接不可用
+            log.warn("Redis连接检查失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 尝试重新连接Redis
+     */
+    private boolean reconnectRedis() {
+        try {
+            log.info("尝试重新连接Redis...");
+            // 先关闭现有连接
+            redisTemplate.getConnectionFactory().getConnection().close();
+            // 获取新连接 
+            redisTemplate.getConnectionFactory().getConnection();
+            // 测试连接是否有效
+            boolean valid = isRedisConnectionValid();
+            if (valid) {
+                log.info("Redis重新连接成功");
+            } else {
+                log.warn("Redis重新连接失败，连接无效");
+            }
+            return valid;
+        } catch (Exception e) {
+            log.error("Redis重连尝试失败: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 定期检查Redis连接状态，并尝试恢复
+     */
+    @Scheduled(fixedRate = 30000) // 每30秒检查一次
+    public void scheduledConnectionCheck() {
+        if (!isRedisConnectionValid()) {
+            log.warn("定时检测到Redis连接不可用，尝试重连");
+            reconnectRedis();
+        }
+    }
 
     @Scheduled(fixedRate = 30000) // 每30秒检查一次
     public void scheduledPendingMessagesCheck() {
-        handlePendingMessages();
+        if (running && isRedisConnectionValid()) {
+            handlePendingMessages();
+        }
     }
-
 
     private void handlePendingMessages() {
         try {
+            // 如果连接无效，直接返回
+            if (!isRedisConnectionValid()) {
+                return;
+            }
+            
             // 获取pending消息摘要
             PendingMessagesSummary summary = redisTemplate.opsForStream()
                     .pending(CHAT_STREAM, CONSUMER_GROUP);
@@ -304,7 +394,10 @@ public class RedisMessageService {
     @PreDestroy
     public void cleanup() {
         try {
-// 停止消息处理线程池
+            // 标记服务已停止
+            running = false;
+            
+            // 停止消息处理线程池
             if (MESSAGE_HANDLER_EXECUTOR != null && !MESSAGE_HANDLER_EXECUTOR.isShutdown()) {
                 MESSAGE_HANDLER_EXECUTOR.shutdown();
                 log.info("消息处理线程池已关闭");
@@ -313,6 +406,5 @@ public class RedisMessageService {
             log.error("关闭消息处理线程池失败", e);
         }
     }
-
 
 }
