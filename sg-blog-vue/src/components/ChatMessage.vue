@@ -3,6 +3,7 @@
 
     <!-- 无消息提示 -->
     <div v-if="messages.length === 0" class="empty-message">
+      <i class="el-icon-chat-line-square"></i>
       <p>暂无消息，开始聊天吧~</p>
     </div>
 
@@ -25,9 +26,9 @@
         <div class="message-content">
           <div class="message-bubble">{{ message.content }}</div>
           <div class="message-time">
-            <span v-if="message.pending">发送中...</span>
+            <span v-if="message.pending"><i class="el-icon-loading"></i> 发送中...</span>
             <span v-else-if="message.failed">
-              发送失败
+              <i class="el-icon-warning"></i> 发送失败
               <button class="retry-btn" @click="retryMessage(message)">重试</button>
             </span>
             <span v-else>{{ formatTime(message.createdTime) }}</span>
@@ -50,6 +51,7 @@
         :disabled="!inputMessage.trim()"
         @click="sendMessage"
       >
+        <i class="el-icon-s-promotion"></i>
         发送
       </button>
     </div>
@@ -101,6 +103,12 @@ export default {
   watch: {
     messages: {
       handler(newVal, oldVal) {
+        // 防御性编程，确保newVal和oldVal都是数组
+        if (!Array.isArray(newVal) || !Array.isArray(oldVal)) {
+          console.warn('messages watcher接收到无效数据:', {newVal, oldVal});
+          return;
+        }
+        
         // 只有当消息是新增的（而不是更新或删除）时才自动滚动
         const isNewMessageAdded = newVal.length > oldVal.length;
 
@@ -112,7 +120,7 @@ export default {
         }
       },
       deep: true,
-      immediate: true
+      immediate: false // 改为false，避免初始化时出错
     },
     sessionId: {
       immediate: true,
@@ -296,7 +304,9 @@ export default {
         receiverId: this.otherUser.id || this.otherUser.userId,
         sessionId: this.sessionId,
         createdTime: new Date().toISOString(),
-        pending: true
+        pending: true,
+        // 自己发送的消息，已读状态应该为1（已读）
+        isRead: 1
       };
 
       // 添加临时消息到列表
@@ -405,7 +415,7 @@ export default {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  background-color: #f5f5f5;
+  background-color: #f5f7fa;
   position: relative;
 }
 
@@ -421,26 +431,53 @@ export default {
 
 .empty-message {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   flex: 1;
-  color: #999;
+  color: #909399;
+  text-align: center;
+}
+
+.empty-message p {
+  font-size: 16px;
+  margin-top: 15px;
+}
+
+.empty-message i {
+  font-size: 64px;
+  color: #dcdfe6;
 }
 
 .message-list {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   min-height: 0;
   position: relative;
   margin-bottom: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #c0c4cc #f5f7fa;
+}
+
+.message-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+  background-color: #c0c4cc;
+  border-radius: 3px;
+}
+
+.message-list::-webkit-scrollbar-track {
+  background-color: #f5f7fa;
 }
 
 .message-item {
   display: flex;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   max-width: 70%;
   animation: fadeIn 0.3s ease;
 }
@@ -462,7 +499,7 @@ export default {
 .message-avatar {
   width: 40px;
   height: 40px;
-  margin: 0 10px;
+  margin: 0 12px;
   flex-shrink: 0;
 }
 
@@ -471,8 +508,14 @@ export default {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   border: 2px solid #fff;
+  transition: all 0.3s ease;
+}
+
+.own-message .message-avatar img:hover,
+.other-message .message-avatar img:hover {
+  transform: scale(1.05);
 }
 
 .message-content {
@@ -491,36 +534,42 @@ export default {
 /* 添加发送者昵称样式 */
 .message-sender {
   font-size: 12px;
-  color: #666;
+  color: #909399;
   margin-bottom: 4px;
   font-weight: 500;
 }
 
 .message-bubble {
-  padding: 10px 15px;
+  padding: 12px 16px;
   border-radius: 18px;
   word-break: break-word;
   white-space: pre-wrap;
   line-height: 1.5;
   max-width: 100%;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.message-bubble:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .own-message .message-bubble {
-  background-color: #007AFF;
+  background-color: #409EFF;
   color: white;
-  border-bottom-right-radius: 5px;
+  border-bottom-right-radius: 4px;
 }
 
 .other-message .message-bubble {
   background-color: #FFF;
-  color: #333;
-  border-bottom-left-radius: 5px;
+  color: #303133;
+  border-bottom-left-radius: 4px;
 }
 
 .message-time {
   font-size: 12px;
-  color: #999;
+  color: #909399;
   margin-top: 5px;
 }
 
@@ -529,63 +578,123 @@ export default {
 }
 
 .failed-message .message-bubble {
-  border: 1px solid #ff4d4f;
+  border: 1px solid #f56c6c;
+  background-color: #fef0f0;
+  color: #f56c6c;
 }
 
 .retry-btn {
   background: transparent;
-  color: #ff4d4f;
+  color: #f56c6c;
   border: none;
   cursor: pointer;
   margin-left: 5px;
   font-size: 12px;
   text-decoration: underline;
+  transition: all 0.2s;
+}
+
+.retry-btn:hover {
+  color: #ff4d4f;
+  text-decoration: none;
 }
 
 .message-input-container {
   display: flex;
-  padding: 10px;
-  border-top: 1px solid #e0e0e0;
+  padding: 15px;
+  border-top: 1px solid #ebeef5;
   background-color: #fff;
+  align-items: center;
 }
 
 .message-input {
   flex: 1;
-  border: 1px solid #ddd;
-  border-radius: 18px;
-  padding: 10px 15px;
+  border: 1px solid #dcdfe6;
+  border-radius: 20px;
+  padding: 10px 16px;
   min-height: 40px;
   max-height: 120px;
   resize: none;
   outline: none;
   font-size: 14px;
   line-height: 1.5;
+  transition: all 0.3s;
+  background-color: #f5f7fa;
 }
 
 .message-input:focus {
-  border-color: #007AFF;
+  border-color: #409EFF;
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(64,158,255,.1);
 }
 
 .send-button {
   margin-left: 10px;
   border: none;
-  background-color: #007AFF;
+  background-color: #409EFF;
   color: white;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 0 20px;
+  height: 40px;
   font-size: 14px;
   cursor: pointer;
   outline: none;
-  transition: background-color 0.2s;
+  transition: all 0.3s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #66b1ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(64,158,255,.3);
+}
+
+.send-button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .send-button:disabled {
-  background-color: #cccccc;
+  background-color: #c0c4cc;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .message-list {
+    padding: 15px;
+  }
+  
+  .message-item {
+    max-width: 85%;
+    margin-bottom: 15px;
+  }
+  
+  .message-avatar {
+    width: 36px;
+    height: 36px;
+    margin: 0 8px;
+  }
+  
+  .message-bubble {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  
+  .message-input-container {
+    padding: 10px;
+  }
+  
+  .message-input {
+    min-height: 36px;
+  }
+  
+  .send-button {
+    height: 36px;
+    padding: 0 15px;
+  }
 }
 </style>
 
