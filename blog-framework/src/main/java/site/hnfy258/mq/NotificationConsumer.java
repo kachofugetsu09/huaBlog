@@ -57,19 +57,24 @@ public class NotificationConsumer implements RocketMQListener<NotificationMessag
             notificationMap.put("createTime", notificationMessage.getCreateTime());
             notificationMap.put("read", false);
 
-            String detailKey = "notification:detail:" +notificationId;
+            String detailKey = "notification:detail:" + notificationId;
             String notificationJson = objectMapper.writeValueAsString(notificationMap);
-            redisTemplate.opsForValue().set(detailKey, notificationJson, DEFAULT_EXPIRES_DAYS, java.util.concurrent.TimeUnit.DAYS);
+            log.info("保存通知详情，key: {}, value: {}", detailKey, notificationJson);
+
+            // 修复：直接存储JSON字符串，不要使用对象序列化
+            stringRedisTemplate.opsForValue().set(detailKey, notificationJson, DEFAULT_EXPIRES_DAYS, java.util.concurrent.TimeUnit.DAYS);
 
             //添加到用户的通知列表
             String userNotificationKey = NOTIFICATION_KEY_PREFIX + userId;
-            redisTemplate.opsForZSet().add(
+            log.info("添加到用户通知列表，key: {}, id: {}", userNotificationKey, notificationId);
+            stringRedisTemplate.opsForZSet().add(
                     userNotificationKey,
                     notificationId,
                     notificationMessage.getCreateTime().getTime()
             );
 
-            redisTemplate.opsForValue().increment(NOTIFICATION_UNREAD + userId, 1);
+            log.info("增加用户未读通知计数，key: {}", NOTIFICATION_UNREAD + userId);
+            stringRedisTemplate.opsForValue().increment(NOTIFICATION_UNREAD + userId, 1);
 
             log.info("发送评论通知成功,存入user:{}",  userId);
         } catch (Exception e) {

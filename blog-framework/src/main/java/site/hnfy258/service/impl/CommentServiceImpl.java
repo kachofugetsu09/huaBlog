@@ -85,35 +85,71 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     private void sendCommentNotification(Comment comment) {
-        try{
+        try {
+            // Don't proceed if the comment doesn't have a valid createBy
+            if (comment.getCreateBy() == null) {
+                log.warn("Cannot send notification: comment creator ID is null");
+                return;
+            }
 
             NotificationMessage notification = new NotificationMessage();
             notification.setCommentId(comment.getId());
             notification.setCommentType(comment.getType());
+
+            // Get sender information
             Long userFromId = comment.getCreateBy();
             User userFrom = userService.getById(userFromId);
+
+            // Check if the sender user exists
+            if (userFrom == null) {
+                log.warn("Cannot send notification: user with ID {} not found", userFromId);
+                return;
+            }
+
+            // Set sender information in notification
             notification.setFromUserId(userFromId);
             notification.setFromUserAvatar(userFrom.getAvatar());
             notification.setFromUserNickName(userFrom.getNickName());
             notification.setArticleId(comment.getArticleId());
             notification.setCreateTime(comment.getCreateTime());
 
-            Long toUserId;
-            if(comment.getToCommentUserId() ==-1){
-                Article article = articleMapper.getById(comment.getArticleId());
-                toUserId = article.getCreateBy();
-                notification.setToUserId(toUserId);
+            // Determine the notification recipient
+            Long toUserId = null;
+
+            // Case 1: Comment is a root comment (direct comment on an article)
+            if (comment.getRootId() == -1) {
+                // Find article author if article ID exists
+                if (comment.getArticleId() != null) {
+                    Article article = articleMapper.getById(comment.getArticleId());
+                    if (article != null) {
+                        toUserId = article.getCreateBy();
+                    } else {
+                        log.warn("Cannot find article with ID: {}", comment.getArticleId());
+                    }
+                }
             }
-            else {
+            // Case 2: Comment is a reply to another comment
+            else if (comment.getToCommentUserId() != null && comment.getToCommentUserId() != -1) {
                 toUserId = comment.getToCommentUserId();
-               notification.setToUserId(toUserId);
             }
 
-            if(toUserId != null && toUserId != userFromId){
-                rocketMQTemplate.convertAndSend("comment-topic",notification);
+            notification.setToUserId(toUserId);
+
+            // Only send notification if:
+            // 1. We have a valid recipient
+            // 2. The recipient is not the same as the sender (don't notify yourself)
+            if (toUserId != null && toUserId != -1L && !toUserId.equals(userFromId)) {
+                // Verify the recipient exists
+                User recipientUser = userService.getById(toUserId);
+                if (recipientUser != null) {
+                    rocketMQTemplate.convertAndSend("comment-topic", notification);
+                    log.info("Sent comment notification from user {} to user {}", userFromId, toUserId);
+                } else {
+                    log.warn("Cannot send notification: recipient user with ID {} not found", toUserId);
+                }
             }
-        }catch(Exception e){
-            log.error("发送评论通知失败",e);
+        } catch (Exception e) {
+            log.error("发送评论通知失败", e);
         }
     }
 

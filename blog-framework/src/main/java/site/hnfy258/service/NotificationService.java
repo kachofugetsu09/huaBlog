@@ -5,6 +5,6 @@ import site.hnfy258.VO.PageVo;
 public interface NotificationService {
     public Long getUnreadCount(Long userId);
     public PageVo getNotifications(Long userId, Integer pageNum, Integer pageSize);
-    public boolean markAsReadAndDelete(Long userId,Long notificationId);
+    public boolean markAsReadAndDelete(Long userId, String notificationId);
     public void markAllAsReadAndDelete(Long userId);
 }

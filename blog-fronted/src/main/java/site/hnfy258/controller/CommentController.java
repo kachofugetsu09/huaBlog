@@ -11,6 +11,7 @@ import site.hnfy258.domain.ResponseResult;
 import site.hnfy258.entity.Comment;
 import site.hnfy258.filter.ContentFilter;
 import site.hnfy258.service.CommentService;
+import site.hnfy258.utils.SecurityUtils;
 
 @RestController
 @RequestMapping("/comment")
@@ -34,13 +35,24 @@ public class CommentController {
     @SystemLog(bussinessName = "添加评论信息")
     @PostMapping("/addComment")
     public ResponseResult addComment(@RequestBody Comment comment) {
-        String userId = comment.getCreateBy().toString();
-        if(contentFilter.isRepeatedAttack(comment.getContent(),userId)){
-            return ResponseResult.errorResult(400,"请勿重复评论");
+        Long userId = SecurityUtils.getUserId();
+
+        if (userId == null || userId == -1L) {
+            return ResponseResult.errorResult(401, "用户未登录或无权限");
         }
+
+        // Set the comment creator to the authenticated user
+        comment.setCreateBy(userId);
+
+        // Check for repeated comments
+        if(contentFilter.isRepeatedAttack(comment.getContent(), userId.toString())) {
+            return ResponseResult.errorResult(400, "请勿重复评论");
+        }
+
         commentService.addComment(comment);
         return ResponseResult.okResult();
     }
+
     @SystemLog(bussinessName = "显示友链评论列表")
     @GetMapping("/linkCommentList")
     public ResponseResult linkCommentList(Integer pageNum, Integer pageSize) {

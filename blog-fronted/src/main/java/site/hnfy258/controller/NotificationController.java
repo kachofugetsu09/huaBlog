@@ -29,9 +29,8 @@ public class NotificationController {
     @PostMapping("/{notificationId}/read")
     public ResponseResult markAsRead(@RequestParam Long userId,
                                      @PathVariable String notificationId) {
-        boolean res = notificationService.markAsReadAndDelete(userId, Long.valueOf(notificationId));
-        return res? ResponseResult.okResult() : ResponseResult.errorResult(500, "通知失败");
-
+        boolean res = notificationService.markAsReadAndDelete(userId, notificationId);
+        return res? ResponseResult.okResult() : ResponseResult.errorResult(500, "标记已读失败");
     }
 
     @PostMapping("/read-all")
