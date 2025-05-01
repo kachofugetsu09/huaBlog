@@ -8,33 +8,32 @@
 
     <!-- 消息列表 -->
     <div class="message-list">
-      <template v-for="(message, index) in messages">
-        <div
-          :key="message.id || index"
-          class="message-item"
-          :class="{
-            'own-message': isSelfMessage(message),
-            'other-message': !isSelfMessage(message),
-            'pending-message': message.pending,
-            'failed-message': message.failed
-          }"
-        >
-          <div class="message-avatar">
-            <img :src="getMessageAvatar(message)" alt="头像">
-          </div>
-          <div class="message-content">
-            <div class="message-bubble">{{ message.content }}</div>
-            <div class="message-time">
-              <span v-if="message.pending">发送中...</span>
-              <span v-else-if="message.failed">
-                发送失败
-                <button class="retry-btn" @click="retryMessage(message)">重试</button>
-              </span>
-              <span v-else>{{ formatTime(message.createdTime) }}</span>
-            </div>
+      <div
+        v-for="(message, index) in messages"
+        :key="message.id || index"
+        class="message-item"
+        :class="{
+          'own-message': isSelfMessage(message),
+          'other-message': !isSelfMessage(message),
+          'pending-message': message.pending,
+          'failed-message': message.failed
+        }"
+      >
+        <div class="message-avatar">
+          <img :src="getMessageAvatar(message)" alt="头像">
+        </div>
+        <div class="message-content">
+          <div class="message-bubble">{{ message.content }}</div>
+          <div class="message-time">
+            <span v-if="message.pending">发送中...</span>
+            <span v-else-if="message.failed">
+              发送失败
+              <button class="retry-btn" @click="retryMessage(message)">重试</button>
+            </span>
+            <span v-else>{{ formatTime(message.createdTime) }}</span>
           </div>
         </div>
-      </template>
+      </div>
     </div>
 
     <!-- 输入区域 -->
@@ -170,24 +169,23 @@ export default {
     },
 
     scrollToBottom() {
-      const wrapper = this.$refs.messageListWrapper
-      if (!wrapper) return
+      this.$nextTick(() => {
+        const container = this.$refs.messageContainer;
+        const messageList = container.querySelector('.message-list');
+        if (!messageList) return;
 
-      // 先立即跳转到底部
-      wrapper.scrollTop = wrapper.scrollHeight
+        // 立即滚动到底部
+        messageList.scrollTop = messageList.scrollHeight;
 
-      // 然后使用平滑滚动（双保险）
-      setTimeout(() => {
-        wrapper.scrollTo({
-          top: wrapper.scrollHeight,
-          behavior: 'smooth'
-        })
-      }, 50)
+        // 使用两个不同的延时作为保险措施
+        setTimeout(() => {
+          messageList.scrollTop = messageList.scrollHeight;
+        }, 50);
 
-      // 最后再确保一次（应对极端情况）
-      setTimeout(() => {
-        wrapper.scrollTop = wrapper.scrollHeight
-      }, 200)
+        setTimeout(() => {
+          messageList.scrollTop = messageList.scrollHeight;
+        }, 200);
+      });
     },
 
     addMessage(message) {
@@ -353,7 +351,7 @@ export default {
     async retryMessage(message) {
       // 重试消息时，重置滚动标志
       this.shouldScrollToBottom = true;
-      this.isScrolling = false;
+      this.isUserScrolling = false;
 
       // 标记为正在发送
       this.$emit('update-message', message.id, {
@@ -402,11 +400,11 @@ export default {
 </script>
 <style scoped>
 .chat-message-container {
-  flex:1;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: auto;
+  height: 100%;
+  overflow: hidden;
   background-color: #f5f5f5;
   position: relative;
 }
@@ -425,7 +423,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  flex: 1;
   color: #999;
 }
 
@@ -435,9 +433,9 @@ export default {
   padding: 15px;
   display: flex;
   flex-direction: column;
-  overflow: auto;
   min-height: 0;
   position: relative;
+  margin-bottom: 0;
 }
 
 .message-item {

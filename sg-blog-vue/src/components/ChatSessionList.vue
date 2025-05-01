@@ -32,7 +32,7 @@
           <div class="avatar-container">
             <img :src="getAvatarUrl(session)" alt="头像" class="avatar" />
             <span
-              v-if="session.unreadCount > 0"
+              v-if="session.unreadCount && session.unreadCount > 0"
               class="unread-badge"
             >
               {{ session.unreadCount > 99 ? '99+' : session.unreadCount }}
@@ -41,7 +41,7 @@
           <div class="session-content">
             <div class="session-name">{{ session.nickname || '用户 ' + session.userId }}</div>
             <div class="session-preview">
-              {{ session.lastMessage || '暂无消息' }}
+              {{ getLastMessagePreview(session) }}
             </div>
           </div>
         </div>
@@ -131,6 +131,8 @@ export default {
     selectSession(sessionId) {
       this.selectedSessionId = sessionId;
       this.$emit('select-session', sessionId);
+      // 选择会话时发出事件，用于清除未读消息
+      this.$emit('mark-as-read', sessionId);
     },
     getAvatarUrl(session) {
       return session.avatar || this.defaultAvatar;
@@ -138,6 +140,12 @@ export default {
     updateSessions(data) {
       console.log('更新会话列表', data);
       this.sessionResponse.data = data;
+    },
+    getLastMessagePreview(session) {
+      if (!session.lastMessage) return '暂无消息';
+      
+      const isSelf = session.lastMessageSenderId === parseInt(this.currentUserId);
+      return (isSelf ? '我: ' : '') + session.lastMessage;
     }
   }
 };
@@ -262,6 +270,21 @@ export default {
   border-radius: 9px;
   font-size: 12px;
   padding: 0 5px;
+  font-weight: bold;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .session-content {

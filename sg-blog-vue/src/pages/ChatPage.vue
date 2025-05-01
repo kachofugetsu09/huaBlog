@@ -5,6 +5,7 @@
       :currentUserId="currentUserId"
       :selectedId="selectedSessionId"
       @select-session="handleSelectSession"
+      @mark-as-read="markSessionAsRead"
       ref="chatSessionListRef"
     />
     <!-- 聊天区域 -->
@@ -69,10 +70,63 @@ export default {
       this.$nextTick(() => {
         if (this.$refs.chatMessageRef && this.$refs.chatMessageRef.scrollToBottom) {
           this.$refs.chatMessageRef.scrollToBottom();
+          
+          // 添加延时滚动作为额外保险
+          setTimeout(() => {
+            this.$refs.chatMessageRef.scrollToBottom();
+          }, 100);
+          
+          setTimeout(() => {
+            this.$refs.chatMessageRef.scrollToBottom();
+          }, 300);
         }
       });
     },
 
+    // 标记会话为已读
+    async markSessionAsRead(sessionId) {
+      try {
+        // 调用后端API将会话标记为已读
+        const response = await this.markChatSessionAsRead(sessionId);
+        console.log('标记会话已读结果:', response);
+        
+        // 无论API调用成功与否，更新本地会话列表状态
+        this.updateSessionUnreadCount(sessionId, 0);
+        
+        // 刷新会话列表
+        this.fetchChatSessions();
+      } catch (error) {
+        console.warn('标记会话已读失败:', error);
+      }
+    },
+    
+    // 调用后端API标记会话为已读
+    markChatSessionAsRead(sessionId) {
+      // 如果后端有标记已读的API，使用以下代码
+      // return request({
+      //   url: `/chat/sessions/${sessionId}/read`,
+      //   method: 'put'
+      // });
+      
+      // 如果没有API，创建一个模拟的Promise
+      return new Promise(resolve => {
+        console.log('模拟标记会话已读:', sessionId);
+        setTimeout(() => resolve({ code: 200, msg: '操作成功' }), 100);
+      });
+    },
+    
+    // 更新本地会话的未读计数
+    updateSessionUnreadCount(sessionId, count) {
+      if (this.$refs.chatSessionListRef && this.$refs.chatSessionListRef.sessionResponse) {
+        const sessions = this.$refs.chatSessionListRef.sessionResponse.data;
+        const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
+        
+        if (sessionIndex !== -1) {
+          // 更新未读消息计数
+          this.$set(sessions[sessionIndex], 'unreadCount', count);
+        }
+      }
+    },
 
     getUserId() {
       const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -102,16 +156,27 @@ export default {
         console.log('获取会话列表响应:', response);
 
         if (Array.isArray(response)) {
-          this.sessions = response;
+          // 确保每个会话数据包含必要的字段
+          const processedSessions = response.map(session => {
+            return {
+              ...session,
+              // 确保有未读计数字段
+              unreadCount: session.unreadCount || 0,
+              // 确保有发送者ID信息
+              lastMessageSenderId: session.lastMessageSenderId || null
+            };
+          });
+          
+          this.sessions = processedSessions;
 
           if (this.$refs.chatSessionListRef) {
             const formattedResponse = {
               code: 0,
-              data: response,
+              data: processedSessions,
               msg: ''
             };
             this.$refs.chatSessionListRef.sessionResponse = formattedResponse;
-            this.$refs.chatSessionListRef.updateSessions(response);
+            this.$refs.chatSessionListRef.updateSessions(processedSessions);
           }
         } else {
           console.error('会话列表响应不是数组:', response);
@@ -158,9 +223,19 @@ export default {
           this.messages = [];
         }
 
-        // 确保在会话切换后滚动到底部
+        // 多重保险确保在会话切换后滚动到底部
         this.$nextTick(() => {
           this.scrollToBottom();
+          
+          // 延迟100ms再次滚动（防止DOM更新延迟）
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 100);
+          
+          // 延迟300ms再次滚动（防止图片加载等情况）
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 300);
         });
       } catch (error) {
         console.error('获取聊天记录失败:', error);
@@ -256,7 +331,11 @@ export default {
       if (message.sessionId === this.selectedSessionId) {
         const processedMessage = this.processReceivedMessage(message);
         this.addMessage(processedMessage);
+        // 添加多重保险确保滚动到底部
         this.scrollToBottom();
+        setTimeout(() => {
+          this.scrollToBottom();
+        }, 100);
       }
     },
 
@@ -277,10 +356,13 @@ export default {
           this.messages = response.data;
         }
 
+        // 确保在消息更新后滚动到底部，使用多个nextTick和setTimeout
         this.$nextTick(() => {
-          if (this.$refs.chatMessageRef) {
-            this.$refs.chatMessageRef.scrollToBottom();
-          }
+          this.scrollToBottom();
+          // 再添加一个延时滚动（双保险）
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 100);
         });
       } catch (error) {
         console.warn('刷新消息失败，但不影响操作:', error);
@@ -325,6 +407,15 @@ export default {
 
       if (!message) return;
 
+      // 收到消息后，更新会话未读状态
+      if (message.sessionId && message.senderId && 
+          String(message.senderId) !== String(this.currentUserId)) {
+        // 如果不是当前选中的会话，增加未读计数
+        if (String(message.sessionId) !== String(this.selectedSessionId)) {
+          this.incrementSessionUnreadCount(message.sessionId);
+        }
+      }
+
       this.fetchChatSessions();
 
       // 如果消息是针对当前会话的，立即更新UI
@@ -336,14 +427,31 @@ export default {
       this.fetchChatSessions();
     },
 
-
     addMessage(message) {
       // 防止重复添加相同ID的消息
       if (!this.messages.some(m => m.id === message.id)) {
         this.messages.push(message);
         this.$nextTick(() => {
           this.scrollToBottom();
+          // 延迟滚动到底部（双保险）
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 100);
         });
+      }
+    },
+
+    // 增加会话的未读计数
+    incrementSessionUnreadCount(sessionId) {
+      if (this.$refs.chatSessionListRef && this.$refs.chatSessionListRef.sessionResponse) {
+        const sessions = this.$refs.chatSessionListRef.sessionResponse.data;
+        const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
+        
+        if (sessionIndex !== -1) {
+          // 增加未读消息计数
+          const currentCount = sessions[sessionIndex].unreadCount || 0;
+          this.$set(sessions[sessionIndex], 'unreadCount', currentCount + 1);
+        }
       }
     }
   },
