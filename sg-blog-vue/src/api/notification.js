@@ -50,11 +50,7 @@ export function markNotificationAsRead(userId, notificationId) {
     params: { userId }
   }).then(response => {
     console.log('标记通知已读响应:', response);
-    // 即使响应为undefined，也视为成功
-    return response || { code: 200, msg: "操作成功" };
-  }).catch(error => {
-    console.error('标记通知已读请求失败:', error);
-    throw error;
+    return response;
   });
 }
 
